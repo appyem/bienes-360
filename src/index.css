@@ -1,0 +1,31 @@
+/* Reset básico y fuentes */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f5f5f5;
+  color: #000000;
+}
+
+/* Ajustes para Leaflet (Mapas) */
+.leaflet-container {
+  width: 100%;
+  height: 100vh;
+  z-index: 1;
+}
+
+/* Ajustes para Pannellum (360°) */
+.pannellum-container {
+  width: 100%;
+  height: 400px;
+  border-radius: 8px;
+  overflow: hidden;
+}
