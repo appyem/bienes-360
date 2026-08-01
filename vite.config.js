@@ -7,18 +7,10 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'icons/*.png'],
-      manifest: {
-        name: 'Bienes 360º',
-        short_name: 'Bienes360',
-        description: 'Plataforma Inteligente Geoespacial para Inmobiliarias',
-        theme_color: '#ffffff',
-        background_color: '#ffffff',
-        display: 'standalone',
-        icons: [
-          { src: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
-          { src: '/icons/icon-512x512.png', sizes: '512x512', type: 'image/png' }
-        ]
+      includeAssets: ['favicon.ico', 'icons/*.svg'],
+      manifest: false, // Usamos el manifest.webmanifest manual
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}']
       }
     })
   ],

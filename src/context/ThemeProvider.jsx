@@ -1,10 +1,7 @@
-import { createContext, useState, useMemo, useContext } from 'react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { useState, useMemo } from 'react';
+import { ThemeProvider as MUIThemeProvider, createTheme } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
-
-const ThemeContext = createContext();
-
-export const useThemeContext = () => useContext(ThemeContext);
+import { ThemeContext } from './theme';
 
 export const CustomThemeProvider = ({ children }) => {
   const [mode, setMode] = useState('light');
@@ -48,10 +45,10 @@ export const CustomThemeProvider = ({ children }) => {
 
   return (
     <ThemeContext.Provider value={colorMode}>
-      <ThemeProvider theme={theme}>
+      <MUIThemeProvider theme={theme}>
         <CssBaseline />
         {children}
-      </ThemeProvider>
+      </MUIThemeProvider>
     </ThemeContext.Provider>
   );
 };

@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://bienes-360.web.app/sitemap.xml
