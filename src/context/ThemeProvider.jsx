@@ -2,8 +2,9 @@ import { useState, useMemo } from 'react';
 import { ThemeProvider as MUIThemeProvider, createTheme } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
 import { ThemeContext } from './theme';
+import { theme as baseThemeConfig } from '../theme/index'; // Importamos tu diseño premium
 
-export const CustomThemeProvider = ({ children }) => {
+export const ThemeProvider = ({ children }) => {
   const [mode, setMode] = useState('light');
 
   const colorMode = useMemo(
@@ -16,28 +17,14 @@ export const CustomThemeProvider = ({ children }) => {
     [mode]
   );
 
+  // Combinamos tu configuración premium con el modo dinámico
   const theme = useMemo(
     () =>
       createTheme({
+        ...baseThemeConfig, // Hereda TODOS los colores, sombras, tipografías y componentes premium
         palette: {
-          mode,
-          primary: {
-            main: mode === 'light' ? '#000000' : '#ffffff',
-          },
-          background: {
-            default: mode === 'light' ? '#f5f5f5' : '#121212',
-            paper: mode === 'light' ? '#ffffff' : '#1e1e1e',
-          },
-          text: {
-            primary: mode === 'light' ? '#000000' : '#ffffff',
-            secondary: mode === 'light' ? '#666666' : '#b0b0b0',
-          }
-        },
-        typography: {
-          fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-        },
-        shape: {
-          borderRadius: 8,
+          ...baseThemeConfig.palette,
+          mode, // Aplica el modo light/dark
         },
       }),
     [mode]
@@ -46,7 +33,7 @@ export const CustomThemeProvider = ({ children }) => {
   return (
     <ThemeContext.Provider value={colorMode}>
       <MUIThemeProvider theme={theme}>
-        <CssBaseline />
+        <CssBaseline /> {/* Esto aplica el fondo cálido #faf9f7 definido en tu tema */}
         {children}
       </MUIThemeProvider>
     </ThemeContext.Provider>

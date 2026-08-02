@@ -1,15 +1,10 @@
 import { useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import {
-  Box,
-  TextField,
-  Button,
-  Typography,
-  Alert,
-  Paper,
-  Link
+import { 
+  Box, Typography, TextField, Button, Paper, Link, Alert 
 } from '@mui/material';
 import { useAuth } from '../../hooks/useAuth';
+import logo from '../../assets/logo.png';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -23,13 +18,12 @@ const Login = () => {
     e.preventDefault();
     setError('');
     setLoading(true);
-
     try {
       await login(email, password);
-      navigate('/perfil');
-   } catch (error) {
-      console.error('Error de login:', error);
-      setError('Credenciales inválidas. Verifica tu email y contraseña.');
+      navigate('/');
+    } catch (error) {
+      console.error(error);
+      setError('Credenciales incorrectas. Intenta de nuevo.');
     } finally {
       setLoading(false);
     }
@@ -40,59 +34,53 @@ const Login = () => {
       display: 'flex', 
       justifyContent: 'center', 
       alignItems: 'center', 
-      minHeight: 'calc(100vh - 200px)',
-      px: 2
+      minHeight: 'calc(100vh - 150px)',
+      px: 2 
     }}>
-
-    <Box sx={{ textAlign: 'center', mb: 3 }}>
-  <img 
-    src="/logo.png" 
-    alt="Bienes 360°" 
-    style={{ 
-      height: '80px', 
-      width: 'auto',
-      marginBottom: '16px'
-    }} 
-  />
-  <Typography variant="h4" fontWeight="700" color="primary.main" gutterBottom>
-    Bienvenido
-  </Typography>
-  <Typography variant="body2" color="text.secondary">
-    Todo en bienes raíces, en un solo lugar
-  </Typography>
-</Box>
-
-
-
       <Paper 
-        elevation={0} 
+        elevation={3} 
         sx={{ 
-          p: 4, 
+          p: { xs: 4, md: 6 }, 
           width: '100%', 
-          maxWidth: 400,
-          border: '1px solid',
-          borderColor: 'divider'
+          maxWidth: 500, /* Un poco más ancho para acomodar el logo grande */
+          borderRadius: 4,
+          border: '1px solid rgba(255, 255, 255, 0.8)' 
         }}
       >
-        <Typography variant="h5" fontWeight="600" gutterBottom textAlign="center">
-          Iniciar Sesión
-        </Typography>
-        <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ mb: 3 }}>
-          Accede a tu cuenta de Bienes 360º
-        </Typography>
+        {/* LOGO OFICIAL 3 VECES MÁS GRANDE */}
+        <Box sx={{ textAlign: 'center', mb: 4 }}>
+          <Box 
+            component="img"
+            src={logo}
+            alt="Bienes 360° Logo"
+            sx={{ 
+              height: 240, /* 80px * 3 = 240px */
+              width: 'auto', 
+              maxWidth: '100%', /* Para que no se salga en pantallas muy pequeñas */
+              objectFit: 'contain',
+              mb: 3,
+              filter: 'drop-shadow(0 8px 12px rgba(0,0,0,0.08))' /* Sombra un poco más pronunciada para el tamaño grande */
+            }} 
+          />
+          <Typography variant="h4" fontWeight="800" color="text.primary" gutterBottom>
+            Bienvenido
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Ingresa a tu cuenta de Bienes 360º
+          </Typography>
+        </Box>
 
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {error && <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>{error}</Alert>}
 
         <Box component="form" onSubmit={handleSubmit}>
           <TextField
             fullWidth
-            label="Email"
+            label="Correo electrónico"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            margin="normal"
-            variant="outlined"
+            sx={{ mb: 3 }}
           />
           <TextField
             fullWidth
@@ -101,27 +89,29 @@ const Login = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            margin="normal"
-            variant="outlined"
+            sx={{ mb: 4 }}
           />
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
+          
+          <Button 
+            type="submit" 
+            variant="contained" 
+            fullWidth 
             size="large"
             disabled={loading}
-            sx={{ mt: 3, mb: 2, py: 1.5 }}
+            sx={{ mb: 3, py: 1.5 }}
           >
-            {loading ? 'Ingresando...' : 'Ingresar'}
+            {loading ? 'Ingresando...' : 'Iniciar Sesión'}
           </Button>
-        </Box>
 
-        <Typography variant="body2" textAlign="center" sx={{ mt: 2 }}>
-          ¿No tienes cuenta?{' '}
-          <Link component={RouterLink} to="/registro" underline="hover" fontWeight="500">
-            Regístrate aquí
-          </Link>
-        </Typography>
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography variant="body2" color="text.secondary">
+              ¿No tienes una cuenta?{' '}
+              <Link component={RouterLink} to="/registro" underline="hover" fontWeight="600" color="primary.main">
+                Regístrate aquí
+              </Link>
+            </Typography>
+          </Box>
+        </Box>
       </Paper>
     </Box>
   );

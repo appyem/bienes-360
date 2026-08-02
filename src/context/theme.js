@@ -1,4 +1,4 @@
 import { createContext } from 'react';
 
-// Exportamos solo el objeto de contexto
-export const ThemeContext = createContext();
+// Este es el contexto que useTheme.js necesita consumir
+export const ThemeContext = createContext(null);
