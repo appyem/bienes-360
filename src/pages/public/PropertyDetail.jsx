@@ -19,6 +19,7 @@ import { useAuth } from '../../hooks/useAuth';
 import Property360Viewer from '../../components/property/Property360Viewer';
 import FinancialCalculator from '../../components/property/FinancialCalculator';
 import { generatePropertyPdf } from '../../utils/generatePropertyPdf';
+import ContactForm from '../../components/property/ContactForm'; // <-- Nuevo import
 
 const PropertyDetail = () => {
   const { id } = useParams();
@@ -224,29 +225,23 @@ const PropertyDetail = () => {
           </Paper>
         </Grid>
 
+        {/* Sidebar Derecho: Contacto, PDF y Calculadora */}
         <Grid item xs={12} md={4}>
           <Paper sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider', position: 'sticky', top: 24 }}>
             <Typography variant="h6" fontWeight="600" gutterBottom>¿Te interesa esta propiedad?</Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Contáctanos para agendar una visita o solicitar más información.
-            </Typography>
-            <Button variant="contained" fullWidth sx={{ mb: 2, py: 1.5, bgcolor: 'primary.main' }}>
-              Solicitar Visita
-            </Button>
-            <Button variant="outlined" fullWidth sx={{ py: 1.5, mb: 2 }}>
-              Contactar por WhatsApp
-            </Button>
             
-            {/* Botón para descargar Ficha PDF */}
             <Button 
               variant="text" 
               fullWidth 
               startIcon={<PictureAsPdfIcon color="error" />}
               onClick={() => generatePropertyPdf(property)}
-              sx={{ py: 1.5, mb: 3, color: 'text.secondary', textTransform: 'none' }}
+              sx={{ py: 1.5, mb: 2, color: 'text.secondary', textTransform: 'none' }}
             >
               Descargar Ficha PDF
             </Button>
+
+            {/* Formulario de Contacto / Leads */}
+            <ContactForm property={property} />
 
             {/* Calculadora Financiera */}
             <FinancialCalculator propertyPrice={property.price} />

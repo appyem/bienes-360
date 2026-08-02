@@ -7,8 +7,8 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'icons/*.svg'],
-      manifest: false, // Usamos el manifest.webmanifest manual
+      includeAssets: ['favicon.ico', 'icons/*.svg', 'logo.png'],
+      manifest: false,
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}']
       }
@@ -16,6 +16,11 @@ export default defineConfig({
   ],
   server: {
     port: 3000,
+    strictPort: true,
     open: true
+  },
+  // Añade este bloque para silenciar la advertencia de tamaño
+  build: {
+    chunkSizeWarningLimit: 2000 // Aumenta el límite a 2000 KB (2 MB)
   }
 })

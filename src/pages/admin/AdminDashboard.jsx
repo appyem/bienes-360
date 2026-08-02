@@ -54,13 +54,20 @@ const AdminDashboard = () => {
         <Typography variant="h6" fontWeight="600" gutterBottom>
           Acciones Rápidas
         </Typography>
-        <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                <Box sx={{ display: 'flex', gap: 2, mt: 2, flexWrap: 'wrap' }}>
           <Button 
             variant="contained" 
             startIcon={<HomeIcon />}
             onClick={() => navigate('/admin/propiedades')}
           >
             Gestionar Propiedades
+          </Button>
+          <Button 
+            variant="outlined" 
+            color="secondary"
+            onClick={() => navigate('/admin/leads')}
+          >
+            Gestionar Leads (CRM)
           </Button>
         </Box>
       </Paper>

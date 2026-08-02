@@ -14,6 +14,7 @@ import PropertyDetail from './pages/public/PropertyDetail';
 import ProtectedRoute from './components/ui/ProtectedRoute';
 import { CompareProvider } from './context/CompareProvider';
 import CompareBar from './components/property/CompareBar';
+import LeadsDashboard from './pages/admin/leads/LeadsDashboard';
 
 function App() {
   return (
@@ -54,6 +55,15 @@ function App() {
               </ProtectedRoute>
             } 
           />
+
+                  <Route 
+          path="/admin/leads" 
+          element={
+            <ProtectedRoute allowedRoles={['superadmin', 'admin']}>
+              <LeadsDashboard />
+            </ProtectedRoute>
+          } 
+        />
 
           <Route 
             path="/admin/propiedades/nueva" 
