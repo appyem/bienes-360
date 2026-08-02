@@ -1,17 +1,12 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import InfoLayers from './InfoLayers';
+import { getAllProperties } from '../../services/propertyService';
 
 const MANIZALES_CENTER = [5.0689, -75.5174];
-
-const mockProperties = [
-  { id: '1', title: 'Apartamento en Chipre', type: 'Apartamento', price: 450000000, priceText: '$450,000,000', area: '85 m²', rooms: 3, baths: 2, status: 'disponible', coords: [5.0750, -75.5200] },
-  { id: '2', title: 'Casa en La Enea', type: 'Casa', price: 850000000, priceText: '$850,000,000', area: '150 m²', rooms: 4, baths: 3, status: 'vendido', coords: [5.0600, -75.5300] },
-  { id: '3', title: 'Local en el Centro', type: 'Local', price: 3500000, priceText: '$3,500,000/mes', area: '60 m²', rooms: 1, baths: 1, status: 'arrendado', coords: [5.0689, -75.5174] },
-  { id: '4', title: 'Penthouse en Palogrande', type: 'Apartamento', price: 1200000000, priceText: '$1,200,000,000', area: '120 m²', rooms: 3, baths: 3, status: 'reservado', coords: [5.0800, -75.5100] },
-  { id: '5', title: 'Proyecto Nuevo en Villa del Prado', type: 'Apartamento', price: 380000000, priceText: 'Desde $380,000,000', area: '70 m²', rooms: 2, baths: 2, status: 'proximamente', coords: [5.0500, -75.5000] }
-];
 
 const getStatusColor = (status) => {
   const colors = { disponible: '#4CAF50', vendido: '#F44336', arrendado: '#2196F3', reservado: '#FFC107', proximamente: '#9E9E9E' };
@@ -35,14 +30,44 @@ const createCustomIcon = (status) => {
 };
 
 const MapView = ({ filters, activeLayers, baseMap }) => {
-  const filteredProperties = mockProperties.filter(prop => {
+  const [properties, setProperties] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  // 1. Cargar propiedades reales desde Firestore
+  useEffect(() => {
+    const loadProperties = async () => {
+      try {
+        setLoading(true);
+        const data = await getAllProperties();
+        setProperties(data);
+      } catch (error) {
+        console.error('Error cargando propiedades para el mapa:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadProperties();
+  }, []);
+
+  // 2. Filtrar propiedades en el cliente
+  const filteredProperties = properties.filter(prop => {
+    // Omitir propiedades sin coordenadas válidas
+    if (!prop.latitude || !prop.longitude) return false;
+    
+    // Filtro por tipo
     if (filters.tipo !== 'todos' && prop.type !== filters.tipo) return false;
-    if (filters.precioMax && prop.price > Number(filters.precioMax)) return false;
-    if (filters.habitaciones !== 'todos' && prop.rooms < Number(filters.habitaciones)) return false;
+    
+    // Filtro por precio (limpiando símbolos como '$' o ',' por si acaso)
+    const propPrice = Number(String(prop.price).replace(/[^0-9.-]+/g, ''));
+    if (filters.precioMax && propPrice > Number(filters.precioMax)) return false;
+    
+    // Filtro por habitaciones
+    if (filters.habitaciones !== 'todos' && Number(prop.rooms) < Number(filters.habitaciones)) return false;
+    
     return true;
   });
 
-  // Configuración de base maps
   const baseMaps = {
     streets: {
       url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -50,11 +75,19 @@ const MapView = ({ filters, activeLayers, baseMap }) => {
     },
     satellite: {
       url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-      attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+      attribution: 'Tiles &copy; Esri'
     }
   };
 
   const currentBaseMap = baseMaps[baseMap] || baseMaps.streets;
+
+  if (loading) {
+    return (
+      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 1000, background: 'white', padding: '16px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
+        Cargando propiedades del mapa...
+      </div>
+    );
+  }
 
   return (
     <MapContainer
@@ -65,7 +98,7 @@ const MapView = ({ filters, activeLayers, baseMap }) => {
       scrollWheelZoom={true}
     >
       <TileLayer
-        key={baseMap} // Forzar re-render cuando cambie el baseMap
+        key={baseMap}
         attribution={currentBaseMap.attribution}
         url={currentBaseMap.url}
       />
@@ -73,7 +106,7 @@ const MapView = ({ filters, activeLayers, baseMap }) => {
       {filteredProperties.map((prop) => (
         <Marker 
           key={prop.id} 
-          position={prop.coords}
+          position={[Number(prop.latitude), Number(prop.longitude)]}
           icon={createCustomIcon(prop.status)}
         >
           <Popup>
@@ -86,16 +119,19 @@ const MapView = ({ filters, activeLayers, baseMap }) => {
                 {getStatusName(prop.status)}
               </div>
               <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '600' }}>{prop.title}</h3>
-              <p style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '700', color: '#000' }}>{prop.priceText}</p>
+              <p style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '700', color: '#000' }}>{prop.price}</p>
               <div style={{ fontSize: '13px', color: '#666', display: 'flex', gap: '12px' }}>
                 <span>📐 {prop.area}</span>
                 <span>🛏️ {prop.rooms} Hab</span>
                 <span>🚿 {prop.baths} Baños</span>
               </div>
-              <button style={{
-                marginTop: '12px', width: '100%', padding: '8px', backgroundColor: '#000',
-                color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '500'
-              }}>
+              <button 
+                onClick={() => navigate(`/propiedad/${prop.id}`)}
+                style={{
+                  marginTop: '12px', width: '100%', padding: '8px', backgroundColor: '#000',
+                  color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '500'
+                }}
+              >
                 Ver Propiedad
               </button>
             </div>
@@ -106,10 +142,10 @@ const MapView = ({ filters, activeLayers, baseMap }) => {
       {/* Renderizar capas de información */}
       <InfoLayers activeLayers={activeLayers} />
 
-      {filteredProperties.length === 0 && (
+      {filteredProperties.length === 0 && !loading && (
         <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 1000, background: 'white', padding: '16px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', textAlign: 'center' }}>
           <p style={{ margin: 0, fontWeight: '600' }}>No se encontraron propiedades</p>
-          <p style={{ margin: '4px 0 0 0', fontSize: '14px', color: '#666' }}>Intenta ajustar los filtros</p>
+          <p style={{ margin: '4px 0 0 0', fontSize: '14px', color: '#666' }}>Intenta ajustar los filtros o crea una propiedad con coordenadas.</p>
         </div>
       )}
     </MapContainer>

@@ -44,6 +44,24 @@ const Register = () => {
       minHeight: 'calc(100vh - 200px)',
       px: 2
     }}>
+
+
+   sx={{
+  bgcolor: 'background.paper',
+  borderTop: '1px solid',
+  borderColor: 'divider',
+  '& .Mui-selected': {
+    color: 'secondary.main',  // Verde del logo
+  },
+  '& .MuiBottomNavigationAction-root': {
+    color: 'text.secondary',
+    '&:hover': {
+      color: 'primary.main',  // Azul del logo
+    }
+  }
+}}
+
+
       <Paper 
         elevation={0} 
         sx={{ 

@@ -1,10 +1,14 @@
-import { Box, Paper, Typography, Grid, Card, CardContent } from '@mui/material';
+import { Box, Paper, Typography, Grid, Card, CardContent, Button } from '@mui/material';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import BusinessIcon from '@mui/icons-material/Business';
 import PeopleIcon from '@mui/icons-material/People';
 import MapIcon from '@mui/icons-material/Map';
+import HomeIcon from '@mui/icons-material/Home';
+import { useNavigate } from 'react-router-dom';
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
+
   const stats = [
     { title: 'Inmobiliarias', value: '0', icon: <BusinessIcon sx={{ fontSize: 40 }} />, color: '#000000' },
     { title: 'Usuarios Totales', value: '1', icon: <PeopleIcon sx={{ fontSize: 40 }} />, color: '#333333' },
@@ -50,9 +54,15 @@ const AdminDashboard = () => {
         <Typography variant="h6" fontWeight="600" gutterBottom>
           Acciones Rápidas
         </Typography>
-        <Typography variant="body2" color="text.secondary">
-          (Estas funcionalidades se desarrollarán en la Fase 2, Paso 4 y Fase 3)
-        </Typography>
+        <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+          <Button 
+            variant="contained" 
+            startIcon={<HomeIcon />}
+            onClick={() => navigate('/admin/propiedades')}
+          >
+            Gestionar Propiedades
+          </Button>
+        </Box>
       </Paper>
     </Box>
   );

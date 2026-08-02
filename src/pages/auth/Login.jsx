@@ -43,6 +43,27 @@ const Login = () => {
       minHeight: 'calc(100vh - 200px)',
       px: 2
     }}>
+
+    <Box sx={{ textAlign: 'center', mb: 3 }}>
+  <img 
+    src="/logo.png" 
+    alt="Bienes 360°" 
+    style={{ 
+      height: '80px', 
+      width: 'auto',
+      marginBottom: '16px'
+    }} 
+  />
+  <Typography variant="h4" fontWeight="700" color="primary.main" gutterBottom>
+    Bienvenido
+  </Typography>
+  <Typography variant="body2" color="text.secondary">
+    Todo en bienes raíces, en un solo lugar
+  </Typography>
+</Box>
+
+
+
       <Paper 
         elevation={0} 
         sx={{ 

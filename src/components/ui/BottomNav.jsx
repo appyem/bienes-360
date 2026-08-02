@@ -50,14 +50,19 @@ const BottomNav = () => {
         onChange={handleChange}
         showLabels
         sx={{
-          bgcolor: 'background.paper',
-          '& .Mui-selected': {
-            color: 'primary.main',
-          },
-          '& .MuiBottomNavigationAction-root': {
-            color: 'text.secondary',
-          }
-        }}
+  bgcolor: 'background.paper',
+  borderTop: '1px solid',
+  borderColor: 'divider',
+  '& .Mui-selected': {
+    color: 'secondary.main',  // Verde del logo
+  },
+  '& .MuiBottomNavigationAction-root': {
+    color: 'text.secondary',
+    '&:hover': {
+      color: 'primary.main',  // Azul del logo
+    }
+  }
+}}
       >
         <BottomNavigationAction label="Inicio" icon={<HomeIcon />} />
         <BottomNavigationAction label="Mapa" icon={<MapIcon />} />
