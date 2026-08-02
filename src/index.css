@@ -29,3 +29,64 @@ body {
   border-radius: 8px;
   overflow: hidden;
 }
+
+/* Asegurar que el contenedor del mapa ocupe el espacio correcto */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  border-radius: 8px;
+}
+
+/* Ajustar el popup de Leaflet */
+.leaflet-popup-content-wrapper {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.leaflet-popup-content {
+  margin: 12px;
+  font-family: 'Inter', sans-serif;
+}
+
+
+/* Estilos para los marcadores personalizados */
+.custom-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Ajustar el popup de Leaflet para que sea minimalista tipo Apple */
+.leaflet-popup-content-wrapper {
+  border-radius: 12px !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.leaflet-popup-content {
+  margin: 16px !important;
+  font-family: 'Inter', sans-serif !important;
+  line-height: 1.4 !important;
+}
+
+.leaflet-popup-tip {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+}
+
+/* Quitar el borde azul por defecto al hacer foco en el popup */
+.leaflet-container a.leaflet-popup-close-button {
+  color: #999 !important;
+  padding: 8px 8px 0 0 !important;
+  font-size: 20px !important;
+}
+
+.leaflet-container a.leaflet-popup-close-button:hover {
+  color: #000 !important;
+}
+
+/* Estilos para los marcadores de información */
+.info-marker {
+  background: transparent !important;
+  border: none !important;
+}

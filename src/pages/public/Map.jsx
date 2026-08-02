@@ -1,16 +1,41 @@
-import { Typography, Box } from '@mui/material';
-import MapIcon from '@mui/icons-material/Map';
+import { useState } from 'react';
+import { Box } from '@mui/material';
+import MapView from '../../components/map/MapView';
+import MapFilters from '../../components/map/MapFilters';
+import LayerControl from '../../components/map/LayerControl';
 
 const Map = () => {
+  const [filters, setFilters] = useState({
+    tipo: 'todos',
+    precioMax: '',
+    habitaciones: 'todos'
+  });
+
+  const [activeLayers, setActiveLayers] = useState([]);
+  const [baseMap, setBaseMap] = useState('streets');
+
+  const handleLayerToggle = (layerId) => {
+    setActiveLayers(prev => 
+      prev.includes(layerId) 
+        ? prev.filter(id => id !== layerId)
+        : [...prev, layerId]
+    );
+  };
+
   return (
-    <Box sx={{ textAlign: 'center', mt: 4 }}>
-      <MapIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
-      <Typography variant="h5" component="h1" gutterBottom fontWeight="600">
-        Mapa Geoespacial
-      </Typography>
-      <Typography variant="body1" color="text.secondary">
-        En la Fase 3 cargaremos aquí los mapas y las ortofotos de los drones.
-      </Typography>
+    <Box sx={{ position: 'relative', width: '100%', height: '100%' }}>
+      <MapFilters onFilterChange={setFilters} />
+      <MapView 
+        filters={filters} 
+        activeLayers={activeLayers}
+        baseMap={baseMap}
+      />
+      <LayerControl 
+        activeLayers={activeLayers}
+        onLayerToggle={handleLayerToggle}
+        baseMap={baseMap}
+        onBaseMapChange={setBaseMap}
+      />
     </Box>
   );
 };
