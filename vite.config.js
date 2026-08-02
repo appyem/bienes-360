@@ -10,7 +10,9 @@ export default defineConfig({
       includeAssets: ['favicon.ico', 'icons/*.svg', 'logo.png'],
       manifest: false,
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}']
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        // Aumentamos el límite de caché de 2MB a 5MB (5,000,000 bytes)
+        maximumFileSizeToCacheInBytes: 5000000 
       }
     })
   ],
@@ -19,8 +21,8 @@ export default defineConfig({
     strictPort: true,
     open: true
   },
-  // Añade este bloque para silenciar la advertencia de tamaño
   build: {
-    chunkSizeWarningLimit: 2000 // Aumenta el límite a 2000 KB (2 MB)
+    // Aumentamos el límite de advertencia de chunks a 3MB (3000 KB)
+    chunkSizeWarningLimit: 3000 
   }
 })
