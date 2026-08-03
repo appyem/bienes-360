@@ -18,10 +18,10 @@ html {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* 3. Fondo Global Premium (El secreto de Airbnb: un gris/azul muy pálido) */
+/* 3. Fondo Global Premium */
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: #F7F8FA !important; /* Fondo base limpio */
+  background-color: #F7F8FA !important;
   color: #222222;
   min-height: 100vh;
   transition: background-color 0.3s ease, color 0.3s ease;
@@ -48,7 +48,7 @@ body {
   background: #999999;
 }
 
-/* 5. Ajustes para Leaflet (Mapas) - Limpio y sin duplicados */
+/* 5. Ajustes para Leaflet (Mapas) */
 .leaflet-container {
   width: 100%;
   height: 100%;
@@ -106,7 +106,6 @@ body {
   -webkit-backdrop-filter: blur(20px) saturate(180%);
 }
 
-/* Selección de texto elegante */
 ::selection {
   background-color: rgba(26, 58, 82, 0.15);
   color: #1a3a52;
@@ -116,7 +115,6 @@ body {
    MARCADORES 360° PREMIUM (Fase 2)
    ========================================== */
 
-/* Contenedor principal del marcador */
 .psv-custom-marker {
   width: 48px;
   height: 48px;
@@ -127,9 +125,11 @@ body {
   cursor: pointer;
   animation: breathing 2s ease-in-out infinite;
   transform-origin: center;
+  /* CORRECCIÓN MÓVIL: Permite el toque inmediato sin esperar gestos de zoom */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* Punto central blanco tipo "perla/cristal" */
 .psv-custom-marker::before {
   content: '';
   width: 16px;
@@ -139,7 +139,6 @@ body {
   box-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
 
-/* Animación de respiración suave */
 @keyframes breathing {
   0%, 100% { 
     transform: scale(1); 
@@ -151,7 +150,6 @@ body {
   }
 }
 
-/* Etiqueta de precio flotante sobre el marcador */
 .psv-marker-price {
   position: absolute;
   top: -32px;
@@ -166,6 +164,6 @@ body {
   white-space: nowrap;
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   border: 1px solid rgba(255,255,255,0.3);
-  pointer-events: none; /* Para que los clics pasen al marcador */
+  pointer-events: none;
   font-family: 'Inter', sans-serif;
 }

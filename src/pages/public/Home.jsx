@@ -81,9 +81,12 @@ const Home = () => {
           yaw: toRad(marker.position.yaw),
           pitch: toRad(marker.position.pitch),
         },
-        // PRUEBA DE FUEGO: console.log directo en el HTML + !important para anular cualquier bloqueo
+        // CORRECCIÓN MÓVIL: ontouchend + touch-action para garantizar el toque en celulares
         html: `
-          <div class="psv-custom-marker" onclick="console.log('🔥 ¡CLICK INLINE DETECTADO! ID:', '${marker.id}'); window._handlePsvMarkerClick('${marker.id}')" style="background: radial-gradient(circle, ${getStatusColor(marker.status)} 0%, rgba(0,0,0,0) 70%); box-shadow: 0 0 20px ${getStatusColor(marker.status)}, 0 0 40px ${getStatusColor(marker.status)}40, inset 0 2px 4px rgba(255,255,255,0.4); border: 2px solid rgba(255,255,255,0.8); pointer-events: auto !important; cursor: pointer !important; z-index: 9999 !important;">
+          <div class="psv-custom-marker" 
+               onclick="window._handlePsvMarkerClick('${marker.id}')" 
+               ontouchend="window._handlePsvMarkerClick('${marker.id}')" 
+               style="background: radial-gradient(circle, ${getStatusColor(marker.status)} 0%, rgba(0,0,0,0) 70%); box-shadow: 0 0 20px ${getStatusColor(marker.status)}, 0 0 40px ${getStatusColor(marker.status)}40, inset 0 2px 4px rgba(255,255,255,0.4); border: 2px solid rgba(255,255,255,0.8); pointer-events: auto !important; cursor: pointer !important; z-index: 9999 !important; touch-action: manipulation !important; -webkit-tap-highlight-color: transparent;">
             <div class="psv-marker-price" style="pointer-events: none !important;">${marker.price}</div>
           </div>
         `,
@@ -102,19 +105,16 @@ const Home = () => {
       
       viewerRef.current = newViewer;
 
-      // Definimos la función en window para que el HTML inline pueda llamarla
+      // Función global para recibir el clic desde el HTML inline
       window._handlePsvMarkerClick = (markerId) => {
-        console.log('✅ Función window ejecutada. Buscando marcador:', markerId);
         const marker = MOCK_MARKERS.find((m) => m.id === markerId);
         if (marker) {
-          console.log('✅ ¡CLIC DETECTADO! Datos:', marker);
           setSelectedMarkerData(marker);
         }
       };
 
-      // Fallback por si el plugin logra capturar el evento
+      // Fallback por si el plugin captura el evento nativamente
       newViewer.addEventListener('select-marker', (e, marker) => {
-        console.log('📡 Evento select-marker del plugin disparado');
         if (marker && marker.data) {
           setSelectedMarkerData(marker.data);
         }
