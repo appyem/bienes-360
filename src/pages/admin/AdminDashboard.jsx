@@ -4,6 +4,8 @@ import BusinessIcon from '@mui/icons-material/Business';
 import PeopleIcon from '@mui/icons-material/People';
 import MapIcon from '@mui/icons-material/Map';
 import HomeIcon from '@mui/icons-material/Home';
+import PanoramaIcon from '@mui/icons-material/Panorama';
+import AddLocationIcon from '@mui/icons-material/AddLocation'; // <-- NUEVO IMPORT
 import { useNavigate } from 'react-router-dom';
 
 const AdminDashboard = () => {
@@ -54,7 +56,7 @@ const AdminDashboard = () => {
         <Typography variant="h6" fontWeight="600" gutterBottom>
           Acciones Rápidas
         </Typography>
-                <Box sx={{ display: 'flex', gap: 2, mt: 2, flexWrap: 'wrap' }}>
+        <Box sx={{ display: 'flex', gap: 2, mt: 2, flexWrap: 'wrap' }}>
           <Button 
             variant="contained" 
             startIcon={<HomeIcon />}
@@ -68,6 +70,23 @@ const AdminDashboard = () => {
             onClick={() => navigate('/admin/leads')}
           >
             Gestionar Leads (CRM)
+          </Button>
+          <Button 
+            variant="outlined" 
+            startIcon={<PanoramaIcon />}
+            onClick={() => navigate('/admin/panoramas/nueva')}
+            sx={{ borderColor: 'primary.main', color: 'primary.main', '&:hover': { borderColor: 'primary.dark', bgcolor: 'rgba(26, 58, 82, 0.04)' } }}
+          >
+            Subir Panorámica 360°
+          </Button>
+          {/* NUEVO BOTÓN */}
+          <Button 
+            variant="outlined" 
+            startIcon={<AddLocationIcon />}
+            onClick={() => navigate('/admin/marcadores/nuevo')}
+            sx={{ borderColor: 'success.main', color: 'success.main', '&:hover': { borderColor: 'success.dark', bgcolor: 'rgba(76, 175, 80, 0.04)' } }}
+          >
+            Agregar Marcador 3D
           </Button>
         </Box>
       </Paper>

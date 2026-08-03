@@ -11,10 +11,12 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import PropertyList from './pages/admin/properties/PropertyList';
 import PropertyForm from './pages/admin/properties/PropertyForm';
 import PropertyDetail from './pages/public/PropertyDetail';
+import LeadsDashboard from './pages/admin/leads/LeadsDashboard';
+import PanoramaForm from './pages/admin/PanoramaForm';
+import PropertyMarkerForm from './pages/admin/PropertyMarkerForm'; // <-- NUEVO IMPORT
 import ProtectedRoute from './components/ui/ProtectedRoute';
 import { CompareProvider } from './context/CompareProvider';
 import CompareBar from './components/property/CompareBar';
-import LeadsDashboard from './pages/admin/leads/LeadsDashboard';
 
 function App() {
   return (
@@ -56,14 +58,14 @@ function App() {
             } 
           />
 
-                  <Route 
-          path="/admin/leads" 
-          element={
-            <ProtectedRoute allowedRoles={['superadmin', 'admin']}>
-              <LeadsDashboard />
-            </ProtectedRoute>
-          } 
-        />
+          <Route 
+            path="/admin/leads" 
+            element={
+              <ProtectedRoute allowedRoles={['superadmin', 'admin']}>
+                <LeadsDashboard />
+              </ProtectedRoute>
+            } 
+          />
 
           <Route 
             path="/admin/propiedades/nueva" 
@@ -82,11 +84,29 @@ function App() {
               </ProtectedRoute>
             } 
           />
+
+          <Route 
+            path="/admin/panoramas/nueva" 
+            element={
+              <ProtectedRoute allowedRoles={['superadmin', 'admin']}>
+                <PanoramaForm />
+              </ProtectedRoute>
+            } 
+          />
+
+          {/* NUEVA RUTA: Formulario para agregar Marcadores 3D */}
+          <Route 
+            path="/admin/marcadores/nuevo" 
+            element={
+              <ProtectedRoute allowedRoles={['superadmin', 'admin']}>
+                <PropertyMarkerForm />
+              </ProtectedRoute>
+            } 
+          />
           
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
-      {/* Barra flotante de comparación visible en toda la app */}
       <CompareBar />
     </CompareProvider>
   );
