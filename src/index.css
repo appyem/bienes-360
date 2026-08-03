@@ -111,3 +111,61 @@ body {
   background-color: rgba(26, 58, 82, 0.15);
   color: #1a3a52;
 }
+
+/* ==========================================
+   MARCADORES 360° PREMIUM (Fase 2)
+   ========================================== */
+
+/* Contenedor principal del marcador */
+.psv-custom-marker {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  animation: breathing 2s ease-in-out infinite;
+  transform-origin: center;
+}
+
+/* Punto central blanco tipo "perla/cristal" */
+.psv-custom-marker::before {
+  content: '';
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+/* Animación de respiración suave */
+@keyframes breathing {
+  0%, 100% { 
+    transform: scale(1); 
+    opacity: 1; 
+  }
+  50% { 
+    transform: scale(1.15); 
+    opacity: 0.85; 
+  }
+}
+
+/* Etiqueta de precio flotante sobre el marcador */
+.psv-marker-price {
+  position: absolute;
+  top: -32px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(26, 58, 82, 0.95);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  border: 1px solid rgba(255,255,255,0.3);
+  pointer-events: none; /* Para que los clics pasen al marcador */
+  font-family: 'Inter', sans-serif;
+}
