@@ -3,6 +3,7 @@ import {
   Box, Typography, TextField, Button, Paper, Alert, MenuItem, Grid, InputLabel 
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import MyLocationIcon from '@mui/icons-material/MyLocation';
 import { createProperty } from '../../services/propertyService';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../config/firebase';
@@ -29,12 +30,13 @@ const PropertyMarkerForm = () => {
     yaw: '',
     pitch: '',
     imageFile: null,
+    image360File: null, // <-- NUEVO: Archivo para el recorrido interno 360°
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [markerPlaced, setMarkerPlaced] = useState(false);
 
-  // Cargar panorámicas activas para el selector
+  // Cargar panorámicas activas
   useEffect(() => {
     const fetchPanoramas = async () => {
       try {
@@ -53,7 +55,7 @@ const PropertyMarkerForm = () => {
     fetchPanoramas();
   }, []);
 
-  // Inicializar visor 360° cuando se selecciona una panorámica
+  // Inicializar visor 360°
   useEffect(() => {
     if (formData.panoramaId && viewerContainerRef.current) {
       const selectedPanorama = panoramas.find(p => p.id === formData.panoramaId);
@@ -67,22 +69,6 @@ const PropertyMarkerForm = () => {
         });
         
         viewerRef.current = newViewer;
-
-        // Listener de clic para capturar coordenadas
-        newViewer.addEventListener('click', () => {
-          const position = newViewer.getPosition();
-          const yaw = (position.yaw * 180 / Math.PI).toFixed(2);
-          const pitch = (position.pitch * 180 / Math.PI).toFixed(2);
-          
-          setFormData(prev => ({
-            ...prev,
-            yaw: yaw,
-            pitch: pitch,
-          }));
-          setMarkerPlaced(true);
-          
-          console.log(`✅ Marcador colocado en Yaw: ${yaw}, Pitch: ${pitch}`);
-        });
       }
     }
 
@@ -105,11 +91,35 @@ const PropertyMarkerForm = () => {
     }
   };
 
+  const handle360FileChange = (e) => {
+    if (e.target.files[0]) {
+      setFormData({ ...formData, image360File: e.target.files[0] });
+    }
+  };
+
+  // Función para capturar la posición actual del centro de la pantalla (MÉTODO OFICIAL V5)
+  const handleConfirmPosition = () => {
+    if (!viewerRef.current) return;
+    
+    const position = viewerRef.current.getPosition();
+    const yaw = (position.yaw * 180 / Math.PI).toFixed(2);
+    const pitch = (position.pitch * 180 / Math.PI).toFixed(2);
+    
+    setFormData(prev => ({
+      ...prev,
+      yaw: yaw,
+      pitch: pitch,
+    }));
+    setMarkerPlaced(true);
+    
+    console.log(`✅ Posición confirmada en Yaw: ${yaw}, Pitch: ${pitch}`);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!markerPlaced) {
-      setMessage({ type: 'error', text: 'Debes hacer clic en la panorámica para colocar el marcador' });
+      setMessage({ type: 'error', text: 'Debes confirmar la posición del marcador en la panorámica' });
       return;
     }
 
@@ -134,7 +144,12 @@ const PropertyMarkerForm = () => {
         pitch: Number(formData.pitch),
       };
 
-      await createProperty(propertyData, formData.imageFile ? [formData.imageFile] : []);
+      // <-- ACTUALIZADO: Pasamos el tercer parámetro (image360File)
+      await createProperty(
+        propertyData, 
+        formData.imageFile ? [formData.imageFile] : [], 
+        formData.image360File
+      );
 
       setMessage({ type: 'success', text: '¡Marcador/Propiedad guardado exitosamente!' });
       
@@ -142,10 +157,15 @@ const PropertyMarkerForm = () => {
       setFormData(prev => ({
         ...prev,
         title: '', price: '', area: '', rooms: '', bathrooms: '', garages: '',
-        description: '', yaw: '', pitch: '', imageFile: null,
+        description: '', yaw: '', pitch: '', imageFile: null, image360File: null,
       }));
       setMarkerPlaced(false);
-      document.getElementById('property-image-input').value = '';
+      
+      // Resetear inputs de archivo
+      const imgInput = document.getElementById('property-image-input');
+      const img360Input = document.getElementById('property-360-image-input');
+      if (imgInput) imgInput.value = '';
+      if (img360Input) img360Input.value = '';
 
     } catch (error) {
       setMessage({ type: 'error', text: 'Error al guardar: ' + error.message });
@@ -159,7 +179,7 @@ const PropertyMarkerForm = () => {
         Agregar Propiedad como Marcador 3D
       </Typography>
       <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-        Selecciona una panorámica, haz clic en la imagen para colocar el marcador, y completa los datos de la propiedad.
+        Selecciona una panorámica, rota la imagen hasta que el lugar deseado quede detrás de la mira roja central y confirma.
       </Typography>
 
       {message.text && (
@@ -169,7 +189,6 @@ const PropertyMarkerForm = () => {
       )}
 
       <Paper sx={{ p: 4, borderRadius: 4, border: '1px solid rgba(255,255,255,0.8)', mb: 4 }}>
-        {/* 1. Selección de Panorámica */}
         <TextField 
           select 
           name="panoramaId" 
@@ -185,57 +204,79 @@ const PropertyMarkerForm = () => {
           ))}
         </TextField>
 
-        {/* 2. Visor 360° Interactivo */}
         {formData.panoramaId && (
           <Box sx={{ mb: 3 }}>
             <Typography variant="subtitle1" fontWeight="600" sx={{ mb: 2, color: 'primary.main' }}>
-              👆 Haz clic en la imagen para colocar el marcador
+              🎯 1. Rota la imagen hasta alinear la mira roja con el lugar exacto
             </Typography>
-            <Box 
-              ref={viewerContainerRef}
-              sx={{ 
-                width: '100%', 
-                height: '400px', 
-                borderRadius: 2,
-                overflow: 'hidden',
-                border: markerPlaced ? '3px solid #4CAF50' : '3px solid #2196F3',
-                transition: 'border-color 0.3s ease',
-              }}
-            />
+            
+            <Box sx={{ position: 'relative', width: '100%', height: '400px', borderRadius: 2, overflow: 'hidden', border: '3px solid #2196F3' }}>
+              <Box ref={viewerContainerRef} sx={{ width: '100%', height: '100%' }} />
+              
+              <Box sx={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: '40px',
+                height: '40px',
+                border: '3px solid #FF5252',
+                borderRadius: '50%',
+                boxShadow: '0 0 10px rgba(255,82,82,0.8)',
+                background: 'rgba(255,255,255,0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                pointerEvents: 'none',
+                zIndex: 10
+              }}>
+                <Box sx={{ width: '4px', height: '4px', background: '#FF5252', borderRadius: '50%' }} />
+              </Box>
+            </Box>
+            
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+              <Button 
+                variant="contained" 
+                color="primary" 
+                startIcon={<MyLocationIcon />}
+                onClick={handleConfirmPosition}
+                sx={{ py: 1.5, px: 4, borderRadius: 2, fontWeight: 600 }}
+              >
+                ✅ Confirmar esta posición
+              </Button>
+            </Box>
+
             {markerPlaced && (
               <Alert severity="success" sx={{ mt: 2, borderRadius: 2 }}>
-                ✅ Marcador colocado en Yaw: {formData.yaw}°, Pitch: {formData.pitch}°
+                ✅ Posición guardada: Yaw: {formData.yaw}°, Pitch: {formData.pitch}°
               </Alert>
             )}
           </Box>
         )}
 
-        {/* 3. Coordenadas (se llenan automáticamente pero se pueden editar) */}
         <Grid container spacing={3} sx={{ mb: 3 }}>
           <Grid item xs={12} md={6}>
             <TextField 
               name="yaw" 
-              label="Yaw (Rotación Horizontal)" 
+              label="Yaw (Horizontal)" 
               type="number" 
               value={formData.yaw} 
               onChange={handleChange} 
               required 
               fullWidth 
-              helperText="Se llena automáticamente al hacer clic"
-              InputProps={{ readOnly: markerPlaced }}
+              inputProps={{ readOnly: true }} 
             />
           </Grid>
           <Grid item xs={12} md={6}>
             <TextField 
               name="pitch" 
-              label="Pitch (Inclinación Vertical)" 
+              label="Pitch (Vertical)" 
               type="number" 
               value={formData.pitch} 
               onChange={handleChange} 
               required 
               fullWidth 
-              helperText="Se llena automáticamente al hacer clic"
-              InputProps={{ readOnly: markerPlaced }}
+              inputProps={{ readOnly: true }} 
             />
           </Grid>
         </Grid>
@@ -246,9 +287,8 @@ const PropertyMarkerForm = () => {
         onSubmit={handleSubmit}
         sx={{ p: 4, borderRadius: 4, border: '1px solid rgba(255,255,255,0.8)' }}
       >
-        {/* 4. Datos Básicos de la Propiedad */}
         <Typography variant="subtitle1" fontWeight="600" sx={{ mb: 2, color: 'primary.main' }}>
-          🏠 Datos de la Propiedad
+          🏠 2. Datos de la Propiedad
         </Typography>
         <Grid container spacing={3} sx={{ mb: 3 }}>
           <Grid item xs={12} md={8}>
@@ -306,9 +346,9 @@ const PropertyMarkerForm = () => {
           sx={{ mb: 3 }} 
         />
 
-        {/* 5. Imagen Principal */}
-        <Box sx={{ mb: 4, textAlign: 'center' }}>
-          <InputLabel sx={{ mb: 1, fontWeight: 600 }}>Foto Principal de la Propiedad</InputLabel>
+        {/* Foto Principal 2D */}
+        <Box sx={{ mb: 3, textAlign: 'center' }}>
+          <InputLabel sx={{ mb: 1, fontWeight: 600 }}>Foto Principal de la Propiedad (2D)</InputLabel>
           <Button
             component="label"
             variant="outlined"
@@ -316,7 +356,7 @@ const PropertyMarkerForm = () => {
             startIcon={<CloudUploadIcon />}
             sx={{ py: 2, borderRadius: 2, borderWidth: 2 }}
           >
-            {formData.imageFile ? formData.imageFile.name : 'Seleccionar archivo de imagen'}
+            {formData.imageFile ? formData.imageFile.name : 'Seleccionar foto principal (2D)'}
             <input
               id="property-image-input"
               type="file"
@@ -325,6 +365,30 @@ const PropertyMarkerForm = () => {
               onChange={handleFileChange}
             />
           </Button>
+        </Box>
+
+        {/* NUEVO: Imagen 360° Interna */}
+        <Box sx={{ mb: 4, textAlign: 'center' }}>
+          <InputLabel sx={{ mb: 1, fontWeight: 600, color: 'primary.main' }}>🔄 Imagen 360° del Interior (Opcional)</InputLabel>
+          <Button
+            component="label"
+            variant="outlined"
+            fullWidth
+            startIcon={<CloudUploadIcon />}
+            sx={{ py: 2, borderRadius: 2, borderWidth: 2, borderColor: 'primary.main', color: 'primary.main' }}
+          >
+            {formData.image360File ? formData.image360File.name : 'Seleccionar imagen equirectangular 360°'}
+            <input
+              id="property-360-image-input"
+              type="file"
+              hidden
+              accept="image/jpeg, image/png"
+              onChange={handle360FileChange}
+            />
+          </Button>
+          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+            Esta imagen permitirá al usuario hacer paneo dentro del apartamento desde la página de detalles.
+          </Typography>
         </Box>
 
         <Button 

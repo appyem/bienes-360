@@ -5,7 +5,8 @@ import PeopleIcon from '@mui/icons-material/People';
 import MapIcon from '@mui/icons-material/Map';
 import HomeIcon from '@mui/icons-material/Home';
 import PanoramaIcon from '@mui/icons-material/Panorama';
-import AddLocationIcon from '@mui/icons-material/AddLocation'; // <-- NUEVO IMPORT
+import AddLocationIcon from '@mui/icons-material/AddLocation';
+import ListAltIcon from '@mui/icons-material/ListAlt'; // <-- NUEVO
 import { useNavigate } from 'react-router-dom';
 
 const AdminDashboard = () => {
@@ -71,6 +72,17 @@ const AdminDashboard = () => {
           >
             Gestionar Leads (CRM)
           </Button>
+          
+          {/* NUEVO BOTÓN: Gestionar Panorámicas */}
+          <Button 
+            variant="outlined" 
+            startIcon={<ListAltIcon />}
+            onClick={() => navigate('/admin/panoramas')}
+            sx={{ borderColor: 'primary.main', color: 'primary.main', '&:hover': { borderColor: 'primary.dark', bgcolor: 'rgba(26, 58, 82, 0.04)' } }}
+          >
+            Gestionar Panorámicas
+          </Button>
+
           <Button 
             variant="outlined" 
             startIcon={<PanoramaIcon />}
@@ -79,7 +91,6 @@ const AdminDashboard = () => {
           >
             Subir Panorámica 360°
           </Button>
-          {/* NUEVO BOTÓN */}
           <Button 
             variant="outlined" 
             startIcon={<AddLocationIcon />}

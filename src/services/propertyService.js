@@ -15,26 +15,35 @@ import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage
 
 const PROPERTIES_COLLECTION = 'properties';
 
-// Crear nueva propiedad
-export const createProperty = async (propertyData, images = []) => {
+// Crear nueva propiedad (ACTUALIZADO para soportar imagen 360° interna)
+export const createProperty = async (propertyData, images = [], image360File = null) => {
   try {
     // 1. Generar un ID nuevo para el documento ANTES de guardarlo
     const newDocRef = doc(collection(db, PROPERTIES_COLLECTION));
     const newPropertyId = newDocRef.id;
 
-    // 2. Subir imágenes a Storage usando el nuevo ID (ya no será undefined)
+    // 2. Subir imágenes 2D a Storage usando el nuevo ID
     const imageUrls = await uploadPropertyImages(images, newPropertyId);
     
-    // 3. Guardar propiedad en Firestore con ese ID
+    // 3. Subir imagen 360° interna si el usuario la proporcionó
+    let image360Url = null;
+    if (image360File) {
+      const storageRef360 = ref(storage, `properties/${newPropertyId}/interior_360_${image360File.name}`);
+      const snapshot360 = await uploadBytes(storageRef360, image360File);
+      image360Url = await getDownloadURL(snapshot360.ref);
+    }
+    
+    // 4. Guardar propiedad en Firestore con todos los datos
     await setDoc(newDocRef, {
       ...propertyData,
       images: imageUrls,
+      image360: image360Url, // <-- NUEVO CAMPO para el recorrido interno
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
       isActive: true
     });
     
-    return { id: newPropertyId, ...propertyData, images: imageUrls };
+    return { id: newPropertyId, ...propertyData, images: imageUrls, image360: image360Url };
   } catch (error) {
     console.error('Error creating property:', error);
     throw error;

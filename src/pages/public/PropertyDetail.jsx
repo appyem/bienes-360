@@ -19,7 +19,7 @@ import { useAuth } from '../../hooks/useAuth';
 import Property360Viewer from '../../components/property/Property360Viewer';
 import FinancialCalculator from '../../components/property/FinancialCalculator';
 import { generatePropertyPdf } from '../../utils/generatePropertyPdf';
-import ContactForm from '../../components/property/ContactForm'; // <-- Nuevo import
+import ContactForm from '../../components/property/ContactForm';
 
 const PropertyDetail = () => {
   const { id } = useParams();
@@ -157,7 +157,25 @@ const PropertyDetail = () => {
 
       <Box sx={{ mb: 4 }}>
         {activeTab === '360' ? (
-          <Property360Viewer imageUrl={property.image360} title={property.title} />
+          property.image360 ? (
+            <Property360Viewer imageUrl={property.image360} title={property.title} />
+          ) : (
+            <Box sx={{ 
+              p: 8, 
+              textAlign: 'center', 
+              bgcolor: 'grey.50', 
+              borderRadius: 2, 
+              border: '1px dashed', 
+              borderColor: 'grey.300' 
+            }}>
+              <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
+                📷 No hay recorrido 360° interno disponible para esta propiedad.
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Revisa la pestaña "Galería de Fotos" para ver las imágenes disponibles o contacta al agente para más información.
+              </Typography>
+            </Box>
+          )
         ) : (
           <ImageList cols={{ xs: 1, sm: 2, md: 3 }} gap={16}>
             {property.images && property.images.length > 0 ? (
@@ -190,7 +208,7 @@ const PropertyDetail = () => {
                   <SquareFootIcon color="action" />
                   <Box>
                     <Typography variant="body2" color="text.secondary">Área</Typography>
-                    <Typography fontWeight="600">{property.area}</Typography>
+                    <Typography fontWeight="600">{property.area} m²</Typography>
                   </Box>
                 </Box>
               </Grid>
@@ -208,7 +226,7 @@ const PropertyDetail = () => {
                   <BathtubIcon color="action" />
                   <Box>
                     <Typography variant="body2" color="text.secondary">Baños</Typography>
-                    <Typography fontWeight="600">{property.baths}</Typography>
+                    <Typography fontWeight="600">{property.bathrooms || property.baths || '0'}</Typography>
                   </Box>
                 </Box>
               </Grid>

@@ -13,7 +13,9 @@ import PropertyForm from './pages/admin/properties/PropertyForm';
 import PropertyDetail from './pages/public/PropertyDetail';
 import LeadsDashboard from './pages/admin/leads/LeadsDashboard';
 import PanoramaForm from './pages/admin/PanoramaForm';
-import PropertyMarkerForm from './pages/admin/PropertyMarkerForm'; // <-- NUEVO IMPORT
+import PanoramaList from './pages/admin/PanoramaList'; // <-- NUEVO
+import PanoramaEditForm from './pages/admin/PanoramaEditForm'; // <-- NUEVO
+import PropertyMarkerForm from './pages/admin/PropertyMarkerForm';
 import ProtectedRoute from './components/ui/ProtectedRoute';
 import { CompareProvider } from './context/CompareProvider';
 import CompareBar from './components/property/CompareBar';
@@ -94,7 +96,25 @@ function App() {
             } 
           />
 
-          {/* NUEVA RUTA: Formulario para agregar Marcadores 3D */}
+          {/* NUEVAS RUTAS PARA GESTIONAR PANORÁMICAS */}
+          <Route 
+            path="/admin/panoramas" 
+            element={
+              <ProtectedRoute allowedRoles={['superadmin', 'admin']}>
+                <PanoramaList />
+              </ProtectedRoute>
+            } 
+          />
+
+          <Route 
+            path="/admin/panoramas/:id/editar" 
+            element={
+              <ProtectedRoute allowedRoles={['superadmin', 'admin']}>
+                <PanoramaEditForm />
+              </ProtectedRoute>
+            } 
+          />
+
           <Route 
             path="/admin/marcadores/nuevo" 
             element={
