@@ -33,7 +33,6 @@ const Home = () => {
   const [selectedPanoramaId, setSelectedPanoramaId] = useState('');
   const [panoramaInfo, setPanoramaInfo] = useState({ title: 'Cargando...', city: '', markersCount: 0 });
 
-  // Cargar todas las panorámicas activas al inicio
   useEffect(() => {
     const loadAllPanoramas = async () => {
       try {
@@ -49,8 +48,6 @@ const Home = () => {
         }));
         
         setPanoramas(list);
-        
-        // Seleccionar automáticamente la primera (más reciente)
         if (list.length > 0) {
           setSelectedPanoramaId(list[0].id);
         }
@@ -62,7 +59,6 @@ const Home = () => {
     loadAllPanoramas();
   }, []);
 
-  // Cuando cambia la panorámica seleccionada, recargar el visor
   useEffect(() => {
     if (!selectedPanoramaId || panoramas.length === 0) return;
 
@@ -76,7 +72,6 @@ const Home = () => {
       let realMarkers = [];
 
       try {
-        // Intentar cargar imagen de Firebase
         try {
           const testResponse = await fetch(selectedPanorama.imageUrl, { method: 'HEAD' });
           if (testResponse.ok) {
@@ -86,7 +81,6 @@ const Home = () => {
           console.warn('Usando imagen local de respaldo por CORS');
         }
 
-        // Obtener los marcadores asociados a esta panorámica
         const propertiesQuery = query(
           collection(db, 'properties'),
           where('panoramaId', '==', selectedPanoramaId),
@@ -96,7 +90,6 @@ const Home = () => {
         
         realMarkers = propertiesSnapshot.docs.map(doc => {
           const data = doc.data();
-          
           const yaw = data.markerPosition?.yaw ?? data.yaw;
           const pitch = data.markerPosition?.pitch ?? data.pitch;
 
@@ -127,7 +120,6 @@ const Home = () => {
       
       setPanoramaInfo({ title, city, markersCount: realMarkers.length });
 
-      // Destruir visor anterior si existe
       if (viewerRef.current) {
         viewerRef.current.destroy();
         viewerRef.current = null;
@@ -136,7 +128,6 @@ const Home = () => {
       const container = document.querySelector('#panorama-viewer');
       if (!container) return;
 
-      // Preparar marcadores para el plugin
       const pluginMarkers = realMarkers.map(marker => ({
         id: marker.id,
         position: {
@@ -155,7 +146,6 @@ const Home = () => {
         clickable: true,
       }));
 
-      // Crear nuevo visor
       const newViewer = new Viewer({
         container: container,
         panorama: imageUrl,
@@ -167,7 +157,6 @@ const Home = () => {
       
       viewerRef.current = newViewer;
 
-      // Configurar eventos de clic
       window._handlePsvMarkerClick = (markerId) => {
         const marker = realMarkers.find((m) => m.id === markerId);
         if (marker) {
@@ -206,13 +195,39 @@ const Home = () => {
 
   return (
     <Box sx={{ position: 'relative', width: '100%', height: '100vh', overflow: 'hidden', bgcolor: '#F7F8FA' }}>
-      {/* BARRA SUPERIOR CON SELECTOR DE PANORÁMICA */}
-      <Box sx={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000, px: { xs: 2, md: 4 }, py: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, background: 'rgba(255, 255, 255, 0.85)', backdropFilter: 'blur(20px) saturate(180%)', borderBottom: '1px solid rgba(255, 255, 255, 0.6)', boxShadow: '0 2px 20px rgba(0, 0, 0, 0.04)' }}>
-        <Typography variant="h6" fontWeight="800" color="primary.main" sx={{ letterSpacing: '-0.5px', whiteSpace: 'nowrap' }}>Bienes 360°</Typography>
+      {/* BARRA SUPERIOR CON LOGO Y SELECTOR DE PANORÁMICA */}
+      <Box sx={{ 
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000, px: { xs: 2, md: 4 }, py: { xs: 1.5, md: 2 }, 
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, 
+        background: 'rgba(255, 255, 255, 0.85)', backdropFilter: 'blur(20px) saturate(180%)', 
+        borderBottom: '1px solid rgba(255, 255, 255, 0.6)', boxShadow: '0 2px 20px rgba(0, 0, 0, 0.04)' 
+      }}>
+        
+        {/* LOGO + NOMBRE DE LA APP */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          {/* AQUÍ VA TU LOGO: Asegúrate de que el archivo esté en la carpeta 'public' */}
+          <Box 
+            component="img" 
+            src="/logo.png" 
+            alt="Logo Bienes 360°"
+            sx={{ 
+              height: { xs: 32, md: 40 }, 
+              width: 'auto', 
+              objectFit: 'contain' 
+            }} 
+            onError={(e) => {
+              // Fallback por si la imagen no se encuentra, oculta el error feo
+              e.target.style.display = 'none';
+            }}
+          />
+          <Typography variant="h6" fontWeight="800" color="primary.main" sx={{ letterSpacing: '-0.5px', whiteSpace: 'nowrap' }}>
+            Bienes 360°
+          </Typography>
+        </Box>
         
         {/* SELECTOR DE PANORÁMICA */}
         {panoramas.length > 0 && (
-          <FormControl size="small" sx={{ minWidth: { xs: 150, md: 250 } }}>
+          <FormControl size="small" sx={{ minWidth: { xs: 120, md: 250 } }}>
             <Select
               value={selectedPanoramaId}
               onChange={handlePanoramaChange}
@@ -234,14 +249,15 @@ const Home = () => {
           </FormControl>
         )}
 
-        <TextField size="small" placeholder="Ej: Apartamentos en Alta Suiza..." slotProps={{ input: { startAdornment: <InputAdornment position="start"><SearchIcon sx={{ color: 'text.secondary' }} /></InputAdornment> } }} sx={{ width: { xs: '30%', md: '300px' }, '& .MuiOutlinedInput-root': { borderRadius: 12, bgcolor: 'rgba(255, 255, 255, 0.9)', '& fieldset': { borderColor: 'rgba(0, 0, 0, 0.1)' } } }} />
+        <TextField size="small" placeholder="Buscar..." slotProps={{ input: { startAdornment: <InputAdornment position="start"><SearchIcon sx={{ color: 'text.secondary' }} /></InputAdornment> } }} sx={{ width: { xs: '30%', md: '300px' }, display: { xs: 'none', sm: 'block' }, '& .MuiOutlinedInput-root': { borderRadius: 12, bgcolor: 'rgba(255, 255, 255, 0.9)', '& fieldset': { borderColor: 'rgba(0, 0, 0, 0.1)' } } }} />
+        
         <Box sx={{ display: 'flex', gap: 1 }}>
           <IconButton sx={{ bgcolor: 'rgba(255, 255, 255, 0.9)', '&:hover': { bgcolor: 'white' } }}><FilterListIcon /></IconButton>
         </Box>
       </Box>
 
       {/* CHIPS */}
-      <Box sx={{ position: 'fixed', top: { xs: 70, md: 80 }, left: 0, right: 0, zIndex: 999, px: { xs: 2, md: 4 }, py: 1.5, display: 'flex', gap: 1, overflowX: 'auto', background: 'rgba(255, 255, 255, 0.7)', backdropFilter: 'blur(15px)', borderBottom: '1px solid rgba(255, 255, 255, 0.5)', scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' } }}>
+      <Box sx={{ position: 'fixed', top: { xs: 65, md: 80 }, left: 0, right: 0, zIndex: 999, px: { xs: 2, md: 4 }, py: 1.5, display: 'flex', gap: 1, overflowX: 'auto', background: 'rgba(255, 255, 255, 0.7)', backdropFilter: 'blur(15px)', borderBottom: '1px solid rgba(255, 255, 255, 0.5)', scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' } }}>
         {['🏠 Todos', '💰 Venta', '🔑 Arriendo', '🔄 Cambio', '🏛 Subastas', '⭐ Destacados', '🆕 Nuevos', '❤️ Favoritos'].map((chip, index) => (
           <Chip key={index} label={chip} size="small" sx={{ borderRadius: 8, fontWeight: 600, fontSize: '0.85rem', bgcolor: index === 0 ? 'primary.main' : 'rgba(255, 255, 255, 0.9)', color: index === 0 ? 'white' : 'text.primary', border: index === 0 ? 'none' : '1px solid rgba(0, 0, 0, 0.08)', whiteSpace: 'nowrap', transition: 'all 0.2s ease', '&:hover': { transform: 'translateY(-1px)', bgcolor: index === 0 ? 'primary.dark' : 'white' } }} />
         ))}
