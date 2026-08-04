@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { Box, Typography } from '@mui/material';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import InfoLayers from './InfoLayers';
+import InfoLayers from './InfoLayers'; // Ajusta la ruta si es necesario
 import { getAllProperties } from '../../services/propertyService';
 
 const MANIZALES_CENTER = [5.0689, -75.5174];
@@ -34,7 +35,6 @@ const MapView = ({ filters, activeLayers, baseMap }) => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // 1. Cargar propiedades reales desde Firestore
   useEffect(() => {
     const loadProperties = async () => {
       try {
@@ -50,21 +50,12 @@ const MapView = ({ filters, activeLayers, baseMap }) => {
     loadProperties();
   }, []);
 
-  // 2. Filtrar propiedades en el cliente
   const filteredProperties = properties.filter(prop => {
-    // Omitir propiedades sin coordenadas válidas
     if (!prop.latitude || !prop.longitude) return false;
-    
-    // Filtro por tipo
     if (filters.tipo !== 'todos' && prop.type !== filters.tipo) return false;
-    
-    // Filtro por precio (limpiando símbolos como '$' o ',' por si acaso)
     const propPrice = Number(String(prop.price).replace(/[^0-9.-]+/g, ''));
     if (filters.precioMax && propPrice > Number(filters.precioMax)) return false;
-    
-    // Filtro por habitaciones
     if (filters.habitaciones !== 'todos' && Number(prop.rooms) < Number(filters.habitaciones)) return false;
-    
     return true;
   });
 
@@ -83,72 +74,74 @@ const MapView = ({ filters, activeLayers, baseMap }) => {
 
   if (loading) {
     return (
-      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 1000, background: 'white', padding: '16px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
-        Cargando propiedades del mapa...
-      </div>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <Typography>Cargando propiedades del mapa...</Typography>
+      </Box>
     );
   }
 
   return (
-    <MapContainer
-      center={MANIZALES_CENTER}
-      zoom={13}
-      style={{ width: '100%', height: 'calc(100vh - 130px)' }}
-      zoomControl={true}
-      scrollWheelZoom={true}
-    >
-      <TileLayer
-        key={baseMap}
-        attribution={currentBaseMap.attribution}
-        url={currentBaseMap.url}
-      />
-      
-      {filteredProperties.map((prop) => (
-        <Marker 
-          key={prop.id} 
-          position={[Number(prop.latitude), Number(prop.longitude)]}
-          icon={createCustomIcon(prop.status)}
-        >
-          <Popup>
-            <div style={{ minWidth: '180px' }}>
-              <div style={{ 
-                display: 'inline-block', padding: '2px 8px', borderRadius: '4px', 
-                backgroundColor: getStatusColor(prop.status), color: 'white', 
-                fontSize: '10px', fontWeight: 'bold', marginBottom: '8px', textTransform: 'uppercase'
-              }}>
-                {getStatusName(prop.status)}
+    // CAMBIO CLAVE: Contenedor que ajusta la altura dinámicamente según el tamaño de pantalla
+    <Box sx={{ width: '100%', height: { xs: 'calc(100vh - 220px)', sm: 'calc(100vh - 130px)' }, position: 'relative' }}>
+      <MapContainer
+        center={MANIZALES_CENTER}
+        zoom={13}
+        style={{ width: '100%', height: '100%' }}
+        zoomControl={true}
+        scrollWheelZoom={true}
+      >
+        <TileLayer
+          key={baseMap}
+          attribution={currentBaseMap.attribution}
+          url={currentBaseMap.url}
+        />
+        
+        {filteredProperties.map((prop) => (
+          <Marker 
+            key={prop.id} 
+            position={[Number(prop.latitude), Number(prop.longitude)]}
+            icon={createCustomIcon(prop.status)}
+          >
+            <Popup>
+              <div style={{ minWidth: '180px' }}>
+                <div style={{ 
+                  display: 'inline-block', padding: '2px 8px', borderRadius: '4px', 
+                  backgroundColor: getStatusColor(prop.status), color: 'white', 
+                  fontSize: '10px', fontWeight: 'bold', marginBottom: '8px', textTransform: 'uppercase'
+                }}>
+                  {getStatusName(prop.status)}
+                </div>
+                <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '600' }}>{prop.title}</h3>
+                <p style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '700', color: '#000' }}>{prop.price}</p>
+                <div style={{ fontSize: '13px', color: '#666', display: 'flex', gap: '12px' }}>
+                  <span>📐 {prop.area}</span>
+                  <span>🛏️ {prop.rooms} Hab</span>
+                  <span>🚿 {prop.baths || prop.bathrooms} Baños</span>
+                </div>
+                <button 
+                  onClick={() => navigate(`/propiedad/${prop.id}`)}
+                  style={{
+                    marginTop: '12px', width: '100%', padding: '8px', backgroundColor: '#000',
+                    color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '500'
+                  }}
+                >
+                  Ver Propiedad
+                </button>
               </div>
-              <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '600' }}>{prop.title}</h3>
-              <p style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '700', color: '#000' }}>{prop.price}</p>
-              <div style={{ fontSize: '13px', color: '#666', display: 'flex', gap: '12px' }}>
-                <span>📐 {prop.area}</span>
-                <span>🛏️ {prop.rooms} Hab</span>
-                <span>🚿 {prop.baths} Baños</span>
-              </div>
-              <button 
-                onClick={() => navigate(`/propiedad/${prop.id}`)}
-                style={{
-                  marginTop: '12px', width: '100%', padding: '8px', backgroundColor: '#000',
-                  color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '500'
-                }}
-              >
-                Ver Propiedad
-              </button>
-            </div>
-          </Popup>
-        </Marker>
-      ))}
+            </Popup>
+          </Marker>
+        ))}
 
-      {/* Renderizar capas de información */}
-      <InfoLayers activeLayers={activeLayers} />
+        <InfoLayers activeLayers={activeLayers} />
 
-      {filteredProperties.length === 0 && !loading && (
-        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 1000, background: 'white', padding: '16px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', textAlign: 'center' }}>
-          <p style={{ margin: 0, fontWeight: '600' }}>No se encontraron propiedades</p>
-          <p style={{ margin: '4px 0 0 0', fontSize: '14px', color: '#666' }}>Intenta ajustar los filtros o crea una propiedad con coordenadas.</p>
-        </div>
-      )}
-    </MapContainer>
+        {filteredProperties.length === 0 && !loading && (
+          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 1000, background: 'white', padding: '16px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', textAlign: 'center', width: '80%' }}>
+            <p style={{ margin: 0, fontWeight: '600' }}>No se encontraron propiedades</p>
+            <p style={{ margin: '4px 0 0 0', fontSize: '14px', color: '#666' }}>Intenta ajustar los filtros.</p>
+          </div>
+        )}
+      </MapContainer>
+    </Box>
   );
 };
 

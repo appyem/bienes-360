@@ -19,19 +19,21 @@ const MapFilters = ({ onFilterChange }) => {
     <Paper 
       elevation={3}
       sx={{
-        position: 'absolute',
-        top: 16,
-        left: 16,
-        right: 16,
+        // CAMBIO CLAVE: En móvil (xs) es 'relative' para empujar el mapa. En desktop (sm+) es 'absolute' para flotar.
+        position: { xs: 'relative', sm: 'absolute' },
+        top: { xs: 0, sm: 16 },
+        left: { xs: 0, sm: 16 },
+        right: { xs: 0, sm: 16 },
         zIndex: 1000,
         p: 2,
-        borderRadius: 3,
+        borderRadius: { xs: 0, sm: 3 }, // Bordes planos en móvil para aprovechar el espacio
         bgcolor: 'rgba(255, 255, 255, 0.95)',
         backdropFilter: 'blur(10px)',
         display: 'flex',
         flexDirection: { xs: 'column', sm: 'row' },
         gap: 2,
-        alignItems: 'center'
+        alignItems: 'center',
+        mb: { xs: 2, sm: 0 } // Margen inferior en móvil para separarlo del mapa
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: { xs: 1, sm: 0 } }}>
@@ -39,7 +41,7 @@ const MapFilters = ({ onFilterChange }) => {
         <Box component="span" fontWeight="600" fontSize="14px">Filtros</Box>
       </Box>
 
-      <FormControl size="small" sx={{ minWidth: 120, flex: 1 }}>
+      <FormControl size="small" sx={{ minWidth: 120, flex: 1, width: '100%' }}>
         <InputLabel>Tipo</InputLabel>
         <Select
           value={filters.tipo}
@@ -60,10 +62,10 @@ const MapFilters = ({ onFilterChange }) => {
         value={filters.precioMax}
         onChange={(e) => handleChange('precioMax', e.target.value)}
         placeholder="Ej: 500000000"
-        sx={{ flex: 1 }}
+        sx={{ flex: 1, width: '100%' }}
       />
 
-      <FormControl size="small" sx={{ minWidth: 100, flex: 1 }}>
+      <FormControl size="small" sx={{ minWidth: 100, flex: 1, width: '100%' }}>
         <InputLabel>Hab.</InputLabel>
         <Select
           value={filters.habitaciones}
@@ -86,7 +88,7 @@ const MapFilters = ({ onFilterChange }) => {
           setFilters(resetFilters);
           onFilterChange(resetFilters);
         }}
-        sx={{ minWidth: 80 }}
+        sx={{ minWidth: 80, width: { xs: '100%', sm: 'auto' } }}
       >
         Limpiar
       </Button>
