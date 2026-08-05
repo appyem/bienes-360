@@ -1,8 +1,9 @@
 import { useRef, useEffect, useState } from 'react';
-import { Box, Typography, Chip, IconButton, TextField, InputAdornment, MenuItem, Select, FormControl } from '@mui/material';
+import { Box, Typography, Chip, IconButton, TextField, InputAdornment, MenuItem, Select, FormControl, Modal, Button } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import PanoramaIcon from '@mui/icons-material/Panorama';
+import TuneIcon from '@mui/icons-material/Tune';
 import { Viewer } from '@photo-sphere-viewer/core';
 import { MarkersPlugin } from '@photo-sphere-viewer/markers-plugin';
 import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
@@ -12,6 +13,13 @@ import '@photo-sphere-viewer/markers-plugin/index.css';
 import PanoramaMarker from '../../components/property/PanoramaMarker';
 
 const toRad = (deg) => deg * (Math.PI / 180);
+
+// Colores de los marcadores (deben coincidir con los del visor)
+const STATUS_COLORS = {
+  todos: '#4CAF50',      // Verde (disponible)
+  venta: '#2196F3',      // Azul
+  arriendo: '#FF9800',   // Naranja
+};
 
 const getStatusColor = (status) => {
   const colors = {
@@ -32,6 +40,30 @@ const Home = () => {
   const [panoramas, setPanoramas] = useState([]);
   const [selectedPanoramaId, setSelectedPanoramaId] = useState('');
   const [panoramaInfo, setPanoramaInfo] = useState({ title: 'Cargando...', city: '', markersCount: 0 });
+  
+  // Estado del filtro activo (Todos, Venta, Arriendo)
+  const [activeFilter, setActiveFilter] = useState('todos');
+  
+  // CORRECCIÓN: Inicialización perezosa desde localStorage para evitar el error del linter
+  const [showTutorial, setShowTutorial] = useState(() => {
+    const hasSeenTutorial = localStorage.getItem('hasSeenTutorial');
+    return !hasSeenTutorial; // true si NO lo ha visto, false si ya lo vio
+  });
+  
+  const [tutorialStep, setTutorialStep] = useState(1);
+
+  const handleCloseTutorial = () => {
+    setShowTutorial(false);
+    localStorage.setItem('hasSeenTutorial', 'true');
+  };
+
+  const handleNextTutorialStep = () => {
+    if (tutorialStep === 1) {
+      setTutorialStep(2);
+    } else {
+      handleCloseTutorial();
+    }
+  };
 
   useEffect(() => {
     const loadAllPanoramas = async () => {
@@ -128,7 +160,15 @@ const Home = () => {
       const container = document.querySelector('#panorama-viewer');
       if (!container) return;
 
-      const pluginMarkers = realMarkers.map(marker => ({
+      // FILTRAR MARCADORES SEGÚN EL CHIP ACTIVO
+      const filteredMarkers = realMarkers.filter(marker => {
+        if (activeFilter === 'todos') return true;
+        if (activeFilter === 'venta') return marker.status === 'venta';
+        if (activeFilter === 'arriendo') return marker.status === 'arriendo';
+        return true;
+      });
+
+      const pluginMarkers = filteredMarkers.map(marker => ({
         id: marker.id,
         position: {
           yaw: toRad(marker.position.yaw),
@@ -158,7 +198,7 @@ const Home = () => {
       viewerRef.current = newViewer;
 
       window._handlePsvMarkerClick = (markerId) => {
-        const marker = realMarkers.find((m) => m.id === markerId);
+        const marker = filteredMarkers.find((m) => m.id === markerId);
         if (marker) {
           setSelectedMarkerData(marker);
         }
@@ -183,7 +223,7 @@ const Home = () => {
         viewerRef.current = null;
       }
     };
-  }, [selectedPanoramaId, panoramas]);
+  }, [selectedPanoramaId, panoramas, activeFilter]);
 
   const handlePanoramaChange = (event) => {
     setSelectedPanoramaId(event.target.value);
@@ -192,6 +232,13 @@ const Home = () => {
   const handleCloseModal = () => {
     setSelectedMarkerData(null);
   };
+
+  // Configuración de los chips simplificados
+  const filterChips = [
+    { id: 'todos', label: '🏠 Todos', color: STATUS_COLORS.todos },
+    { id: 'venta', label: '💰 Venta', color: STATUS_COLORS.venta },
+    { id: 'arriendo', label: '🔑 Arriendo', color: STATUS_COLORS.arriendo },
+  ];
 
   return (
     <Box sx={{ position: 'relative', width: '100%', height: '100vh', overflow: 'hidden', bgcolor: '#F7F8FA' }}>
@@ -203,29 +250,19 @@ const Home = () => {
         borderBottom: '1px solid rgba(255, 255, 255, 0.6)', boxShadow: '0 2px 20px rgba(0, 0, 0, 0.04)' 
       }}>
         
-        {/* LOGO + NOMBRE DE LA APP */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          {/* AQUÍ VA TU LOGO: Asegúrate de que el archivo esté en la carpeta 'public' */}
           <Box 
             component="img" 
             src="/logo.png" 
             alt="Logo Bienes 360°"
-            sx={{ 
-              height: { xs: 32, md: 40 }, 
-              width: 'auto', 
-              objectFit: 'contain' 
-            }} 
-            onError={(e) => {
-              // Fallback por si la imagen no se encuentra, oculta el error feo
-              e.target.style.display = 'none';
-            }}
+            sx={{ height: { xs: 32, md: 40 }, width: 'auto', objectFit: 'contain' }} 
+            onError={(e) => { e.target.style.display = 'none'; }}
           />
           <Typography variant="h6" fontWeight="800" color="primary.main" sx={{ letterSpacing: '-0.5px', whiteSpace: 'nowrap' }}>
             Bienes 360°
           </Typography>
         </Box>
         
-        {/* SELECTOR DE PANORÁMICA */}
         {panoramas.length > 0 && (
           <FormControl size="small" sx={{ minWidth: { xs: 120, md: 250 } }}>
             <Select
@@ -256,17 +293,43 @@ const Home = () => {
         </Box>
       </Box>
 
-      {/* CHIPS */}
+      {/* CHIPS SIMPLIFICADOS (solo 3) */}
       <Box sx={{ position: 'fixed', top: { xs: 65, md: 80 }, left: 0, right: 0, zIndex: 999, px: { xs: 2, md: 4 }, py: 1.5, display: 'flex', gap: 1, overflowX: 'auto', background: 'rgba(255, 255, 255, 0.7)', backdropFilter: 'blur(15px)', borderBottom: '1px solid rgba(255, 255, 255, 0.5)', scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' } }}>
-        {['🏠 Todos', '💰 Venta', '🔑 Arriendo', '🔄 Cambio', '🏛 Subastas', '⭐ Destacados', '🆕 Nuevos', '❤️ Favoritos'].map((chip, index) => (
-          <Chip key={index} label={chip} size="small" sx={{ borderRadius: 8, fontWeight: 600, fontSize: '0.85rem', bgcolor: index === 0 ? 'primary.main' : 'rgba(255, 255, 255, 0.9)', color: index === 0 ? 'white' : 'text.primary', border: index === 0 ? 'none' : '1px solid rgba(0, 0, 0, 0.08)', whiteSpace: 'nowrap', transition: 'all 0.2s ease', '&:hover': { transform: 'translateY(-1px)', bgcolor: index === 0 ? 'primary.dark' : 'white' } }} />
-        ))}
+        {filterChips.map((chip) => {
+          const isActive = activeFilter === chip.id;
+          return (
+            <Chip 
+              key={chip.id}
+              label={chip.label} 
+              size="small" 
+              onClick={() => setActiveFilter(chip.id)}
+              sx={{ 
+                borderRadius: 8, 
+                fontWeight: 700, 
+                fontSize: '0.9rem', 
+                px: 1,
+                bgcolor: isActive ? chip.color : 'rgba(255, 255, 255, 0.95)',
+                color: isActive ? 'white' : chip.color,
+                border: isActive ? 'none' : `2px solid ${chip.color}`,
+                whiteSpace: 'nowrap', 
+                transition: 'all 0.2s ease',
+                cursor: 'pointer',
+                '&:hover': { 
+                  transform: 'translateY(-1px)',
+                  bgcolor: isActive ? chip.color : `${chip.color}15`,
+                  boxShadow: isActive ? `0 4px 12px ${chip.color}50` : 'none',
+                },
+                boxShadow: isActive ? `0 4px 12px ${chip.color}50` : 'none',
+              }} 
+            />
+          );
+        })}
       </Box>
 
       {/* VISOR */}
       <Box id="panorama-viewer" sx={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1, '& .psv-canvas': { cursor: 'grab', '&:active': { cursor: 'grabbing' } } }} />
 
-      {/* MODAL */}
+      {/* MODAL DE PROPIEDAD */}
       {selectedMarkerData && <PanoramaMarker marker={selectedMarkerData} onClose={handleCloseModal} />}
 
       {/* BARRA INFERIOR */}
@@ -280,6 +343,131 @@ const Home = () => {
           <Typography variant="caption" color="text.secondary">Explora el sector en 360°</Typography>
         </Box>
       </Box>
+
+      {/* TUTORIAL DE BIENVENIDA */}
+      <Modal
+        open={showTutorial}
+        onClose={handleCloseTutorial}
+        sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          zIndex: 9998,
+        }}
+      >
+        <Box
+          sx={{
+            position: 'relative',
+            width: { xs: '90%', sm: 450 },
+            maxWidth: 500,
+            bgcolor: 'white',
+            borderRadius: 4,
+            boxShadow: 24,
+            p: { xs: 3, sm: 4 },
+            outline: 'none',
+            textAlign: 'center',
+            animation: 'fadeIn 0.3s ease-out',
+            '@keyframes fadeIn': {
+              from: { opacity: 0, transform: 'scale(0.9)' },
+              to: { opacity: 1, transform: 'scale(1)' },
+            },
+          }}
+        >
+          {/* Indicador de paso */}
+          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1, mb: 3 }}>
+            <Box sx={{ width: 32, height: 4, borderRadius: 2, bgcolor: tutorialStep === 1 ? 'primary.main' : 'grey.300', transition: 'all 0.3s' }} />
+            <Box sx={{ width: 32, height: 4, borderRadius: 2, bgcolor: tutorialStep === 2 ? 'primary.main' : 'grey.300', transition: 'all 0.3s' }} />
+          </Box>
+
+          {tutorialStep === 1 ? (
+            <>
+              <Box sx={{ 
+                width: 80, 
+                height: 80, 
+                mx: 'auto', 
+                mb: 2,
+                borderRadius: '50%', 
+                bgcolor: '#E3F2FD',
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center' 
+              }}>
+                <PanoramaIcon sx={{ fontSize: 44, color: 'primary.main' }} />
+              </Box>
+              <Typography variant="h5" fontWeight="700" gutterBottom sx={{ color: 'primary.main' }}>
+                ¡Bienvenido a Bienes 360°!
+              </Typography>
+              <Typography variant="body1" color="text.secondary" sx={{ mb: 3, lineHeight: 1.6 }}>
+                Primero, <strong>elige el sector</strong> donde quieres buscar tu vivienda usando el selector de la parte superior.
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3, fontStyle: 'italic', bgcolor: 'grey.50', p: 2, borderRadius: 2 }}>
+                💡 Podrás rotar la imagen 360° arrastrando con el dedo o el mouse para explorar todo el sector.
+              </Typography>
+            </>
+          ) : (
+            <>
+              <Box sx={{ 
+                width: 80, 
+                height: 80, 
+                mx: 'auto', 
+                mb: 2,
+                borderRadius: '50%', 
+                bgcolor: '#FFF3E0',
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center' 
+              }}>
+                <TuneIcon sx={{ fontSize: 44, color: '#FF9800' }} />
+              </Box>
+              <Typography variant="h5" fontWeight="700" gutterBottom sx={{ color: '#FF9800' }}>
+                ¡Excelente!
+              </Typography>
+              <Typography variant="body1" color="text.secondary" sx={{ mb: 3, lineHeight: 1.6 }}>
+                Ahora, <strong>filtra por tipo</strong> usando los botones de abajo: <strong style={{ color: STATUS_COLORS.venta }}>Venta</strong> o <strong style={{ color: STATUS_COLORS.arriendo }}>Arriendo</strong>.
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3, fontStyle: 'italic', bgcolor: 'grey.50', p: 2, borderRadius: 2 }}>
+                💡 Los marcadores en el visor cambiarán de color según el filtro seleccionado.
+              </Typography>
+            </>
+          )}
+
+          <Box sx={{ display: 'flex', gap: 1.5, mt: 2 }}>
+            {tutorialStep === 2 && (
+              <Button
+                onClick={handleCloseTutorial}
+                variant="outlined"
+                sx={{ 
+                  flex: 1, 
+                  py: 1.5, 
+                  borderRadius: 2,
+                  fontWeight: 600,
+                  textTransform: 'none',
+                }}
+              >
+                Saltar
+              </Button>
+            )}
+            <Button
+              onClick={handleNextTutorialStep}
+              variant="contained"
+              sx={{ 
+                flex: 1, 
+                py: 1.5, 
+                borderRadius: 2,
+                fontWeight: 700,
+                textTransform: 'none',
+                fontSize: '1rem',
+                bgcolor: tutorialStep === 1 ? 'primary.main' : STATUS_COLORS.arriendo,
+                '&:hover': {
+                  bgcolor: tutorialStep === 1 ? 'primary.dark' : '#F57C00',
+                },
+              }}
+            >
+              {tutorialStep === 1 ? 'Siguiente' : '¡Entendido!'}
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
     </Box>
   );
 };
