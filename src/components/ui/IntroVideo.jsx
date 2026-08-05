@@ -6,22 +6,19 @@ const IntroVideo = ({ onComplete }) => {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
-    // Asegurar que el video se reproduzca automáticamente
     if (videoRef.current) {
       videoRef.current.play().catch(error => {
         console.warn('Autoplay bloqueado por el navegador:', error);
-        // Si el autoplay falla, completamos inmediatamente
         setTimeout(() => onComplete(), 100);
       });
     }
   }, [onComplete]);
 
   const handleVideoEnd = () => {
-    // Animación de salida suave
     setIsVisible(false);
     setTimeout(() => {
       onComplete();
-    }, 500); // Espera a que termine la animación de fade-out
+    }, 500);
   };
 
   return (
@@ -42,20 +39,31 @@ const IntroVideo = ({ onComplete }) => {
         pointerEvents: isVisible ? 'auto' : 'none',
       }}
     >
-      <video
-        ref={videoRef}
-        src="/anilogo360.mp4"
-        onEnded={handleVideoEnd}
-        autoPlay
-        muted
-        playsInline
-        style={{
+      {/* Contenedor con aspect-ratio 16:9 para recorte más suave */}
+      <Box
+        sx={{
           width: '100%',
-          height: '100%',
-          objectFit: 'cover', // Recorta los bordes en móvil para llenar la pantalla
-          objectPosition: 'center',
+          maxWidth: '177.78vh', // Mantiene aspect-ratio 16:9 basado en la altura de la pantalla
+          aspectRatio: '16 / 9',
+          overflow: 'hidden',
+          position: 'relative',
         }}
-      />
+      >
+        <video
+          ref={videoRef}
+          src="/anilogo360.mp4"
+          onEnded={handleVideoEnd}
+          autoPlay
+          muted
+          playsInline
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center',
+          }}
+        />
+      </Box>
     </Box>
   );
 };
