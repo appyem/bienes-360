@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import Home from './pages/public/Home';
@@ -13,16 +14,25 @@ import PropertyForm from './pages/admin/properties/PropertyForm';
 import PropertyDetail from './pages/public/PropertyDetail';
 import LeadsDashboard from './pages/admin/leads/LeadsDashboard';
 import PanoramaForm from './pages/admin/PanoramaForm';
-import PanoramaList from './pages/admin/PanoramaList'; // <-- NUEVO
-import PanoramaEditForm from './pages/admin/PanoramaEditForm'; // <-- NUEVO
+import PanoramaList from './pages/admin/PanoramaList';
+import PanoramaEditForm from './pages/admin/PanoramaEditForm';
 import PropertyMarkerForm from './pages/admin/PropertyMarkerForm';
 import ProtectedRoute from './components/ui/ProtectedRoute';
+import IntroVideo from './components/ui/IntroVideo';
 import { CompareProvider } from './context/CompareProvider';
 import CompareBar from './components/property/CompareBar';
 
 function App() {
+  const [showIntro, setShowIntro] = useState(true);
+
+  const handleIntroComplete = () => {
+    setShowIntro(false);
+  };
+
   return (
     <CompareProvider>
+      {showIntro && <IntroVideo onComplete={handleIntroComplete} />}
+      
       <Routes>
         <Route element={<MainLayout />}>
           <Route path="/" element={<Home />} />
@@ -96,7 +106,6 @@ function App() {
             } 
           />
 
-          {/* NUEVAS RUTAS PARA GESTIONAR PANORÁMICAS */}
           <Route 
             path="/admin/panoramas" 
             element={
