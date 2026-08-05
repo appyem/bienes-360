@@ -39,31 +39,20 @@ const IntroVideo = ({ onComplete }) => {
         pointerEvents: isVisible ? 'auto' : 'none',
       }}
     >
-      {/* Contenedor con aspect-ratio 16:9 para recorte más suave */}
-      <Box
-        sx={{
+      <video
+        ref={videoRef}
+        src="/iniciologo.mp4"
+        onEnded={handleVideoEnd}
+        autoPlay
+        muted
+        playsInline
+        style={{
           width: '100%',
-          maxWidth: '177.78vh', // Mantiene aspect-ratio 16:9 basado en la altura de la pantalla
-          aspectRatio: '16 / 9',
-          overflow: 'hidden',
-          position: 'relative',
+          height: '100%',
+          objectFit: 'cover',
+          objectPosition: 'center',
         }}
-      >
-        <video
-          ref={videoRef}
-          src="/anilogo360.mp4"
-          onEnded={handleVideoEnd}
-          autoPlay
-          muted
-          playsInline
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            objectPosition: 'center',
-          }}
-        />
-      </Box>
+      />
     </Box>
   );
 };
