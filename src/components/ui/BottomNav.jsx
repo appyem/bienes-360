@@ -37,32 +37,40 @@ const BottomNav = () => {
         left: 0, 
         right: 0, 
         zIndex: 1000,
-        borderTop: '1px solid',
-        borderColor: 'divider',
+        // Estilo Glassmorphism Oscuro Premium (igual que los chips)
+        bgcolor: 'rgba(15, 15, 15, 0.75)',
+        backdropFilter: 'blur(24px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+        borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+        boxShadow: '0 -4px 30px rgba(0, 0, 0, 0.4)',
         borderRadius: 0,
         // Ajuste para iPhone (Safe Area)
         pb: 'env(safe-area-inset-bottom)' 
       }} 
-      elevation={3}
+      elevation={0} // Eliminamos la sombra por defecto para usar la personalizada
     >
       <BottomNavigation
         value={getValue()}
         onChange={handleChange}
         showLabels
         sx={{
-  bgcolor: 'background.paper',
-  borderTop: '1px solid',
-  borderColor: 'divider',
-  '& .Mui-selected': {
-    color: 'secondary.main',  // Verde del logo
-  },
-  '& .MuiBottomNavigationAction-root': {
-    color: 'text.secondary',
-    '&:hover': {
-      color: 'primary.main',  // Azul del logo
-    }
-  }
-}}
+          bgcolor: 'transparent', // El fondo lo maneja el Paper
+          '& .Mui-selected': {
+            color: '#B8860B', // Dorado elegante (mismo acento premium de la app)
+          },
+          '& .MuiBottomNavigationAction-root': {
+            color: 'rgba(255, 255, 255, 0.6)', // Color base sutil para iconos/texto
+            transition: 'color 0.2s ease',
+            '&:hover': {
+              color: 'rgba(255, 255, 255, 0.9)', 
+            }
+          },
+          '& .MuiBottomNavigationAction-label': {
+            fontSize: '0.7rem',
+            fontWeight: 600,
+            letterSpacing: '0.5px',
+          }
+        }}
       >
         <BottomNavigationAction label="Inicio" icon={<HomeIcon />} />
         <BottomNavigationAction label="Mapa" icon={<MapIcon />} />

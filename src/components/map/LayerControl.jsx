@@ -16,24 +16,32 @@ const LayerControl = ({ activeLayers, onLayerToggle, baseMap, onBaseMapChange })
 
   return (
     <Paper 
-      elevation={3}
+      elevation={0}
       sx={{
+        // POSICIONAMIENTO CLAVE: Esquina inferior derecha, encima del BottomNav
         position: 'absolute',
-        bottom: 24,
+        bottom: 80, // 80px desde abajo para no tapar la barra de navegación
         right: 16,
-        zIndex: 1000,
+        zIndex: 800, // Por debajo del filtro superior (1000) pero sobre el mapa
         borderRadius: 3,
-        overflow: 'hidden'
+        overflow: 'hidden',
+        // Estilo cristal oscuro para coincidir con el resto de la app
+        bgcolor: 'rgba(35, 35, 35, 0.85)',
+        backdropFilter: 'blur(24px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        boxShadow: '0 4px 30px rgba(0, 0, 0, 0.3)'
       }}
     >
       {/* Botón para abrir/cerrar */}
       <IconButton 
         onClick={() => setIsOpen(!isOpen)}
         sx={{ 
-          bgcolor: 'background.paper', 
+          bgcolor: 'rgba(255, 255, 255, 0.1)', 
+          color: '#fff',
           borderRadius: '50%',
           m: 1,
-          '&:hover': { bgcolor: 'action.hover' }
+          '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.2)' }
         }}
       >
         {isOpen ? <CloseIcon /> : <LayersIcon />}
@@ -41,8 +49,8 @@ const LayerControl = ({ activeLayers, onLayerToggle, baseMap, onBaseMapChange })
 
       {/* Panel desplegable */}
       <Collapse in={isOpen}>
-        <Box sx={{ p: 2, minWidth: 220, borderTop: '1px solid', borderColor: 'divider' }}>
-          <Typography variant="subtitle2" fontWeight="600" gutterBottom>
+        <Box sx={{ p: 2, minWidth: 220, borderTop: '1px solid', borderColor: 'rgba(255,255,255,0.1)' }}>
+          <Typography variant="subtitle2" fontWeight="600" gutterBottom sx={{ color: 'rgba(255,255,255,0.9)' }}>
             Tipo de Mapa
           </Typography>
           
@@ -53,13 +61,15 @@ const LayerControl = ({ activeLayers, onLayerToggle, baseMap, onBaseMapChange })
                 flex: 1,
                 p: 1.5,
                 border: '2px solid',
-                borderColor: baseMap === 'streets' ? 'primary.main' : 'divider',
+                borderColor: baseMap === 'streets' ? '#B8860B' : 'rgba(255,255,255,0.2)',
                 borderRadius: 2,
                 cursor: 'pointer',
                 textAlign: 'center',
                 fontSize: '12px',
                 fontWeight: baseMap === 'streets' ? '600' : '400',
-                transition: 'all 0.2s'
+                color: baseMap === 'streets' ? '#B8860B' : 'rgba(255,255,255,0.7)',
+                transition: 'all 0.2s',
+                bgcolor: baseMap === 'streets' ? 'rgba(184, 134, 11, 0.1)' : 'transparent'
               }}
             >
               🗺️ Calles
@@ -70,20 +80,22 @@ const LayerControl = ({ activeLayers, onLayerToggle, baseMap, onBaseMapChange })
                 flex: 1,
                 p: 1.5,
                 border: '2px solid',
-                borderColor: baseMap === 'satellite' ? 'primary.main' : 'divider',
+                borderColor: baseMap === 'satellite' ? '#B8860B' : 'rgba(255,255,255,0.2)',
                 borderRadius: 2,
                 cursor: 'pointer',
                 textAlign: 'center',
                 fontSize: '12px',
                 fontWeight: baseMap === 'satellite' ? '600' : '400',
-                transition: 'all 0.2s'
+                color: baseMap === 'satellite' ? '#B8860B' : 'rgba(255,255,255,0.7)',
+                transition: 'all 0.2s',
+                bgcolor: baseMap === 'satellite' ? 'rgba(184, 134, 11, 0.1)' : 'transparent'
               }}
             >
               🛰️ Satélite
             </Box>
           </Box>
 
-          <Typography variant="subtitle2" fontWeight="600" gutterBottom>
+          <Typography variant="subtitle2" fontWeight="600" gutterBottom sx={{ color: 'rgba(255,255,255,0.9)' }}>
             Capas de Información
           </Typography>
 
@@ -95,10 +107,15 @@ const LayerControl = ({ activeLayers, onLayerToggle, baseMap, onBaseMapChange })
                   size="small"
                   checked={activeLayers.includes(layer.id)}
                   onChange={() => onLayerToggle(layer.id)}
+                  sx={{
+                    '& .MuiSwitch-thumb': { bgcolor: '#fff' },
+                    '& .MuiSwitch-track': { bgcolor: 'rgba(255,255,255,0.3)' },
+                    '&.Mui-checked .MuiSwitch-track': { bgcolor: '#B8860B' }
+                  }}
                 />
               }
               label={
-                <Box component="span" sx={{ fontSize: '13px' }}>
+                <Box component="span" sx={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)' }}>
                   {layer.icon} {layer.label}
                 </Box>
               }

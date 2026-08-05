@@ -1,85 +1,131 @@
-import { Marker, Popup } from 'react-leaflet';
-import L from 'leaflet';
+import { useState } from 'react';
+import { Paper, Box, Typography, Switch, FormControlLabel, IconButton, Collapse } from '@mui/material';
+import LayersIcon from '@mui/icons-material/Layers';
+import CloseIcon from '@mui/icons-material/Close';
 
-// Datos mock de puntos de interés en Manizales
-const infoData = {
-  colegios: [
-    { id: 'c1', name: 'Colegio San José', coords: [5.0720, -75.5150] },
-    { id: 'c2', name: 'Liceo de Caldas', coords: [5.0680, -75.5200] },
-    { id: 'c3', name: 'Colegio Integrado', coords: [5.0750, -75.5100] }
-  ],
-  hospitales: [
-    { id: 'h1', name: 'Hospital San Jorge', coords: [5.0690, -75.5180] },
-    { id: 'h2', name: 'Clínica Los Rosales', coords: [5.0730, -75.5120] }
-  ],
-  parques: [
-    { id: 'p1', name: 'Parque Caldas', coords: [5.0689, -75.5174] },
-    { id: 'p2', name: 'Parque de Los Novios', coords: [5.0650, -75.5250] },
-    { id: 'p3', name: 'Jardín Botánico', coords: [5.0800, -75.5050] }
-  ],
-  transporte: [
-    { id: 't1', name: 'Terminal de Transportes', coords: [5.0550, -75.5100] },
-    { id: 't2', name: 'Paradero Central', coords: [5.0700, -75.5160] }
-  ],
-  comercios: [
-    { id: 'co1', name: 'Centro Comercial Chipre', coords: [5.0760, -75.5210] },
-    { id: 'co2', name: 'Palatino Mall', coords: [5.0670, -75.5190] }
-  ]
-};
+const LayerControl = ({ activeLayers, onLayerToggle, baseMap, onBaseMapChange }) => {
+  const [isOpen, setIsOpen] = useState(false);
 
-const createInfoIcon = (emoji) => {
-  return L.divIcon({
-    className: 'info-marker',
-    html: `<div style="
-      width: 28px; 
-      height: 28px; 
-      background-color: white; 
-      border: 2px solid #000;
-      border-radius: 50%; 
-      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-    ">${emoji}</div>`,
-    iconSize: [28, 28],
-    iconAnchor: [14, 14],
-    popupAnchor: [0, -14]
-  });
-};
-
-const InfoLayers = ({ activeLayers }) => {
-  const layerEmojis = {
-    colegios: '🏫',
-    hospitales: '🏥',
-    parques: '🌳',
-    transporte: '🚌',
-    comercios: '🏪'
-  };
+  const infoLayers = [
+    { id: 'colegios', label: 'Colegios', icon: '🏫' },
+    { id: 'hospitales', label: 'Hospitales', icon: '🏥' },
+    { id: 'parques', label: 'Parques', icon: '🌳' },
+    { id: 'transporte', label: 'Transporte', icon: '🚌' },
+    { id: 'comercios', label: 'Comercios', icon: '🏪' }
+  ];
 
   return (
-    <>
-      {activeLayers.map((layerId) => {
-        const data = infoData[layerId] || [];
-        const emoji = layerEmojis[layerId];
-        
-        return data.map((item) => (
-          <Marker 
-            key={item.id} 
-            position={item.coords}
-            icon={createInfoIcon(emoji)}
-          >
-            <Popup>
-              <div style={{ minWidth: '150px', textAlign: 'center' }}>
-                <div style={{ fontSize: '24px', marginBottom: '8px' }}>{emoji}</div>
-                <strong style={{ fontSize: '14px' }}>{item.name}</strong>
-              </div>
-            </Popup>
-          </Marker>
-        ));
-      })}
-    </>
+    <Paper 
+      elevation={0}
+      sx={{
+        // POSICIONAMIENTO CLAVE: Esquina inferior derecha, encima del BottomNav
+        position: 'absolute',
+        bottom: 80, // 80px desde abajo para no tapar la barra de navegación
+        right: 16,
+        zIndex: 800, // Por debajo del filtro superior (1000) pero sobre el mapa
+        borderRadius: 3,
+        overflow: 'hidden',
+        // Estilo cristal oscuro para coincidir con el resto de la app
+        bgcolor: 'rgba(35, 35, 35, 0.85)',
+        backdropFilter: 'blur(24px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        boxShadow: '0 4px 30px rgba(0, 0, 0, 0.3)'
+      }}
+    >
+      {/* Botón para abrir/cerrar */}
+      <IconButton 
+        onClick={() => setIsOpen(!isOpen)}
+        sx={{ 
+          bgcolor: 'rgba(255, 255, 255, 0.1)', 
+          color: '#fff',
+          borderRadius: '50%',
+          m: 1,
+          '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.2)' }
+        }}
+      >
+        {isOpen ? <CloseIcon /> : <LayersIcon />}
+      </IconButton>
+
+      {/* Panel desplegable */}
+      <Collapse in={isOpen}>
+        <Box sx={{ p: 2, minWidth: 220, borderTop: '1px solid', borderColor: 'rgba(255,255,255,0.1)' }}>
+          <Typography variant="subtitle2" fontWeight="600" gutterBottom sx={{ color: 'rgba(255,255,255,0.9)' }}>
+            Tipo de Mapa
+          </Typography>
+          
+          <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+            <Box
+              onClick={() => onBaseMapChange('streets')}
+              sx={{
+                flex: 1,
+                p: 1.5,
+                border: '2px solid',
+                borderColor: baseMap === 'streets' ? '#B8860B' : 'rgba(255,255,255,0.2)',
+                borderRadius: 2,
+                cursor: 'pointer',
+                textAlign: 'center',
+                fontSize: '12px',
+                fontWeight: baseMap === 'streets' ? '600' : '400',
+                color: baseMap === 'streets' ? '#B8860B' : 'rgba(255,255,255,0.7)',
+                transition: 'all 0.2s',
+                bgcolor: baseMap === 'streets' ? 'rgba(184, 134, 11, 0.1)' : 'transparent'
+              }}
+            >
+              🗺️ Calles
+            </Box>
+            <Box
+              onClick={() => onBaseMapChange('satellite')}
+              sx={{
+                flex: 1,
+                p: 1.5,
+                border: '2px solid',
+                borderColor: baseMap === 'satellite' ? '#B8860B' : 'rgba(255,255,255,0.2)',
+                borderRadius: 2,
+                cursor: 'pointer',
+                textAlign: 'center',
+                fontSize: '12px',
+                fontWeight: baseMap === 'satellite' ? '600' : '400',
+                color: baseMap === 'satellite' ? '#B8860B' : 'rgba(255,255,255,0.7)',
+                transition: 'all 0.2s',
+                bgcolor: baseMap === 'satellite' ? 'rgba(184, 134, 11, 0.1)' : 'transparent'
+              }}
+            >
+              🛰️ Satélite
+            </Box>
+          </Box>
+
+          <Typography variant="subtitle2" fontWeight="600" gutterBottom sx={{ color: 'rgba(255,255,255,0.9)' }}>
+            Capas de Información
+          </Typography>
+
+          {infoLayers.map((layer) => (
+            <FormControlLabel
+              key={layer.id}
+              control={
+                <Switch
+                  size="small"
+                  checked={activeLayers.includes(layer.id)}
+                  onChange={() => onLayerToggle(layer.id)}
+                  sx={{
+                    '& .MuiSwitch-thumb': { bgcolor: '#fff' },
+                    '& .MuiSwitch-track': { bgcolor: 'rgba(255,255,255,0.3)' },
+                    '&.Mui-checked .MuiSwitch-track': { bgcolor: '#B8860B' }
+                  }}
+                />
+              }
+              label={
+                <Box component="span" sx={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)' }}>
+                  {layer.icon} {layer.label}
+                </Box>
+              }
+              sx={{ display: 'block', mb: 0.5 }}
+            />
+          ))}
+        </Box>
+      </Collapse>
+    </Paper>
   );
 };
 
-export default InfoLayers;
+export default LayerControl;

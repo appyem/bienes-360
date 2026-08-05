@@ -1,9 +1,11 @@
 import { useRef, useEffect, useState } from 'react';
 import { Box, Typography, Chip, IconButton, TextField, InputAdornment, MenuItem, Select, FormControl, Modal, Button } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import FilterListIcon from '@mui/icons-material/FilterList';
-import PanoramaIcon from '@mui/icons-material/Panorama';
 import TuneIcon from '@mui/icons-material/Tune';
+import PanoramaIcon from '@mui/icons-material/Panorama';
+import HomeWorkIcon from '@mui/icons-material/HomeWork';
+import BusinessIcon from '@mui/icons-material/Business';
+import KeyIcon from '@mui/icons-material/Key';
 import { Viewer } from '@photo-sphere-viewer/core';
 import { MarkersPlugin } from '@photo-sphere-viewer/markers-plugin';
 import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
@@ -14,22 +16,22 @@ import PanoramaMarker from '../../components/property/PanoramaMarker';
 
 const toRad = (deg) => deg * (Math.PI / 180);
 
-// Colores de los marcadores (deben coincidir con los del visor)
+// Paleta de colores PREMIUM (más sobrios y elegantes)
 const STATUS_COLORS = {
-  todos: '#4CAF50',      // Verde (disponible)
-  venta: '#2196F3',      // Azul
-  arriendo: '#FF9800',   // Naranja
+  todos: '#2C3E50',      // Azul carbón profundo
+  venta: '#1E3A5F',      // Azul profundo elegante
+  arriendo: '#B8860B',   // Dorado oscuro / Ámbar
 };
 
 const getStatusColor = (status) => {
   const colors = {
-    disponible: '#4CAF50',
-    venta: '#2196F3',
-    arriendo: '#FF9800',
-    cambio: '#9C27B0',
-    subasta: '#FFD700',
-    reservado: '#F44336',
-    vendido: '#9E9E9E',
+    disponible: '#2C3E50',
+    venta: '#1E3A5F',
+    arriendo: '#B8860B',
+    cambio: '#6A5ACD',
+    subasta: '#DAA520',
+    reservado: '#8B0000',
+    vendido: '#4A4A4A',
   };
   return colors[status] || colors.disponible;
 };
@@ -41,13 +43,11 @@ const Home = () => {
   const [selectedPanoramaId, setSelectedPanoramaId] = useState('');
   const [panoramaInfo, setPanoramaInfo] = useState({ title: 'Cargando...', city: '', markersCount: 0 });
   
-  // Estado del filtro activo (Todos, Venta, Arriendo)
   const [activeFilter, setActiveFilter] = useState('todos');
   
-  // CORRECCIÓN: Inicialización perezosa desde localStorage para evitar el error del linter
   const [showTutorial, setShowTutorial] = useState(() => {
     const hasSeenTutorial = localStorage.getItem('hasSeenTutorial');
-    return !hasSeenTutorial; // true si NO lo ha visto, false si ya lo vio
+    return !hasSeenTutorial;
   });
   
   const [tutorialStep, setTutorialStep] = useState(1);
@@ -160,7 +160,6 @@ const Home = () => {
       const container = document.querySelector('#panorama-viewer');
       if (!container) return;
 
-      // FILTRAR MARCADORES SEGÚN EL CHIP ACTIVO
       const filteredMarkers = realMarkers.filter(marker => {
         if (activeFilter === 'todos') return true;
         if (activeFilter === 'venta') return marker.status === 'venta';
@@ -233,21 +232,32 @@ const Home = () => {
     setSelectedMarkerData(null);
   };
 
-  // Configuración de los chips simplificados
+  // Chips con iconos profesionales (sin emojis)
   const filterChips = [
-    { id: 'todos', label: '🏠 Todos', color: STATUS_COLORS.todos },
-    { id: 'venta', label: '💰 Venta', color: STATUS_COLORS.venta },
-    { id: 'arriendo', label: '🔑 Arriendo', color: STATUS_COLORS.arriendo },
+    { id: 'todos', label: 'Todos', icon: <HomeWorkIcon sx={{ fontSize: 18 }} />, color: STATUS_COLORS.todos },
+    { id: 'venta', label: 'Venta', icon: <BusinessIcon sx={{ fontSize: 18 }} />, color: STATUS_COLORS.venta },
+    { id: 'arriendo', label: 'Arriendo', icon: <KeyIcon sx={{ fontSize: 18 }} />, color: STATUS_COLORS.arriendo },
   ];
 
   return (
-    <Box sx={{ position: 'relative', width: '100%', height: '100vh', overflow: 'hidden', bgcolor: '#F7F8FA' }}>
-      {/* BARRA SUPERIOR CON LOGO Y SELECTOR DE PANORÁMICA */}
+    <Box sx={{ 
+      position: 'relative', 
+      width: '100%', 
+      height: '100vh', 
+      overflow: 'hidden',
+      // Fondo oscuro elegante con degradado sutil
+      background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%)',
+    }}>
+      {/* BARRA SUPERIOR PREMIUM (Glassmorphism refinado) */}
       <Box sx={{ 
-        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000, px: { xs: 2, md: 4 }, py: { xs: 1.5, md: 2 }, 
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000, 
+        px: { xs: 2, md: 4 }, py: { xs: 1.5, md: 2 }, 
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, 
-        background: 'rgba(255, 255, 255, 0.85)', backdropFilter: 'blur(20px) saturate(180%)', 
-        borderBottom: '1px solid rgba(255, 255, 255, 0.6)', boxShadow: '0 2px 20px rgba(0, 0, 0, 0.04)' 
+        background: 'rgba(15, 15, 15, 0.65)',
+        backdropFilter: 'blur(24px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+        boxShadow: '0 4px 30px rgba(0, 0, 0, 0.3)',
       }}>
         
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -255,10 +265,24 @@ const Home = () => {
             component="img" 
             src="/logo.png" 
             alt="Logo Bienes 360°"
-            sx={{ height: { xs: 32, md: 40 }, width: 'auto', objectFit: 'contain' }} 
+            sx={{ 
+              height: { xs: 32, md: 40 }, 
+              width: 'auto', 
+              objectFit: 'contain',
+              filter: 'brightness(1.1) contrast(1.05)',
+            }} 
             onError={(e) => { e.target.style.display = 'none'; }}
           />
-          <Typography variant="h6" fontWeight="800" color="primary.main" sx={{ letterSpacing: '-0.5px', whiteSpace: 'nowrap' }}>
+          <Typography 
+            variant="h6" 
+            fontWeight="700" 
+            sx={{ 
+              letterSpacing: '0.5px', 
+              whiteSpace: 'nowrap',
+              color: '#FFFFFF',
+              textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+            }}
+          >
             Bienes 360°
           </Typography>
         </Box>
@@ -269,16 +293,19 @@ const Home = () => {
               value={selectedPanoramaId}
               onChange={handlePanoramaChange}
               displayEmpty
-              startAdornment={<PanoramaIcon sx={{ mr: 1, color: 'primary.main' }} />}
+              startAdornment={<PanoramaIcon sx={{ mr: 1, color: '#B8860B' }} />}
               sx={{ 
-                bgcolor: 'rgba(255, 255, 255, 0.9)', 
-                borderRadius: 3,
-                '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(0, 0, 0, 0.1)' },
-                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main' },
+                bgcolor: 'rgba(255, 255, 255, 0.08)',
+                color: '#FFFFFF',
+                borderRadius: 2,
+                '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.15)' },
+                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.3)' },
+                '& .MuiSelect-icon': { color: '#FFFFFF' },
+                '& .MuiSvgIcon-root': { color: '#FFFFFF' },
               }}
             >
               {panoramas.map((pano) => (
-                <MenuItem key={pano.id} value={pano.id}>
+                <MenuItem key={pano.id} value={pano.id} sx={{ bgcolor: '#1a1a1a', color: '#FFFFFF' }}>
                   {pano.title}
                 </MenuItem>
               ))}
@@ -286,86 +313,150 @@ const Home = () => {
           </FormControl>
         )}
 
-        <TextField size="small" placeholder="Buscar..." slotProps={{ input: { startAdornment: <InputAdornment position="start"><SearchIcon sx={{ color: 'text.secondary' }} /></InputAdornment> } }} sx={{ width: { xs: '30%', md: '300px' }, display: { xs: 'none', sm: 'block' }, '& .MuiOutlinedInput-root': { borderRadius: 12, bgcolor: 'rgba(255, 255, 255, 0.9)', '& fieldset': { borderColor: 'rgba(0, 0, 0, 0.1)' } } }} />
+        <TextField 
+          size="small" 
+          placeholder="Buscar..." 
+          slotProps={{ 
+            input: { 
+              startAdornment: <InputAdornment position="start"><SearchIcon sx={{ color: 'rgba(255,255,255,0.6)' }} /></InputAdornment> 
+            } 
+          }} 
+          sx={{ 
+            width: { xs: '30%', md: '300px' }, 
+            display: { xs: 'none', sm: 'block' },
+            '& .MuiOutlinedInput-root': { 
+              borderRadius: 2, 
+              bgcolor: 'rgba(255, 255, 255, 0.08)',
+              color: '#FFFFFF',
+              '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.15)' },
+              '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.3)' },
+              '& input::placeholder': { color: 'rgba(255,255,255,0.5)', opacity: 1 },
+            } 
+          }} 
+        />
         
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <IconButton sx={{ bgcolor: 'rgba(255, 255, 255, 0.9)', '&:hover': { bgcolor: 'white' } }}><FilterListIcon /></IconButton>
+          <IconButton sx={{ 
+            bgcolor: 'rgba(255, 255, 255, 0.08)', 
+            color: '#FFFFFF',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.15)' } 
+          }}>
+            <TuneIcon />
+          </IconButton>
         </Box>
       </Box>
 
-      {/* CHIPS SIMPLIFICADOS (solo 3) */}
-      <Box sx={{ position: 'fixed', top: { xs: 65, md: 80 }, left: 0, right: 0, zIndex: 999, px: { xs: 2, md: 4 }, py: 1.5, display: 'flex', gap: 1, overflowX: 'auto', background: 'rgba(255, 255, 255, 0.7)', backdropFilter: 'blur(15px)', borderBottom: '1px solid rgba(255, 255, 255, 0.5)', scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' } }}>
+      {/* CHIPS PREMIUM (con iconos profesionales, sin emojis) */}
+      <Box sx={{ 
+        position: 'fixed', 
+        top: { xs: 65, md: 80 }, 
+        left: 0, right: 0, zIndex: 999, 
+        px: { xs: 2, md: 4 }, py: 1.5, 
+        display: 'flex', gap: 1.5, 
+        overflowX: 'auto', 
+        background: 'rgba(15, 15, 15, 0.55)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
+        scrollbarWidth: 'none', 
+        '&::-webkit-scrollbar': { display: 'none' } 
+      }}>
         {filterChips.map((chip) => {
           const isActive = activeFilter === chip.id;
           return (
             <Chip 
               key={chip.id}
-              label={chip.label} 
-              size="small" 
+              icon={chip.icon}
+              label={chip.label.toUpperCase()}
+              size="medium" 
               onClick={() => setActiveFilter(chip.id)}
               sx={{ 
-                borderRadius: 8, 
+                borderRadius: 2, 
                 fontWeight: 700, 
-                fontSize: '0.9rem', 
-                px: 1,
-                bgcolor: isActive ? chip.color : 'rgba(255, 255, 255, 0.95)',
-                color: isActive ? 'white' : chip.color,
-                border: isActive ? 'none' : `2px solid ${chip.color}`,
+                fontSize: '0.8rem',
+                letterSpacing: '0.8px',
+                px: 2,
+                py: 2.5,
+                height: 'auto',
+                bgcolor: isActive ? chip.color : 'rgba(255, 255, 255, 0.06)',
+                color: isActive ? '#FFFFFF' : 'rgba(255, 255, 255, 0.85)',
+                border: isActive ? 'none' : '1px solid rgba(255, 255, 255, 0.15)',
                 whiteSpace: 'nowrap', 
-                transition: 'all 0.2s ease',
+                transition: 'all 0.25s ease',
                 cursor: 'pointer',
-                '&:hover': { 
-                  transform: 'translateY(-1px)',
-                  bgcolor: isActive ? chip.color : `${chip.color}15`,
-                  boxShadow: isActive ? `0 4px 12px ${chip.color}50` : 'none',
+                '& .MuiChip-icon': { 
+                  color: isActive ? '#FFFFFF' : 'rgba(255, 255, 255, 0.7)',
+                  ml: '4px',
                 },
-                boxShadow: isActive ? `0 4px 12px ${chip.color}50` : 'none',
+                '&:hover': { 
+                  transform: 'translateY(-2px)',
+                  bgcolor: isActive ? chip.color : 'rgba(255, 255, 255, 0.12)',
+                  boxShadow: isActive ? `0 6px 20px ${chip.color}60` : '0 4px 12px rgba(0,0,0,0.3)',
+                },
+                boxShadow: isActive ? `0 4px 16px ${chip.color}50` : 'none',
               }} 
             />
           );
         })}
       </Box>
 
-      {/* VISOR */}
-      <Box id="panorama-viewer" sx={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1, '& .psv-canvas': { cursor: 'grab', '&:active': { cursor: 'grabbing' } } }} />
+      {/* VISOR 360° */}
+      <Box id="panorama-viewer" sx={{ 
+        position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1, 
+        '& .psv-canvas': { cursor: 'grab', '&:active': { cursor: 'grabbing' } } 
+      }} />
 
       {/* MODAL DE PROPIEDAD */}
       {selectedMarkerData && <PanoramaMarker marker={selectedMarkerData} onClose={handleCloseModal} />}
 
-      {/* BARRA INFERIOR */}
-      <Box sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1000, px: { xs: 2, md: 4 }, py: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255, 255, 255, 0.9)', backdropFilter: 'blur(20px)', borderTop: '1px solid rgba(255, 255, 255, 0.6)', boxShadow: '0 -2px 20px rgba(0, 0, 0, 0.04)' }}>
+      {/* BARRA INFERIOR PREMIUM */}
+      <Box sx={{ 
+        position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1000, 
+        px: { xs: 2, md: 4 }, py: 2, 
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
+        background: 'rgba(15, 15, 15, 0.75)',
+        backdropFilter: 'blur(24px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+        borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+        boxShadow: '0 -4px 30px rgba(0, 0, 0, 0.4)',
+      }}>
         <Box>
-          <Typography variant="body2" fontWeight="600" color="text.primary">{panoramaInfo.title}</Typography>
-          <Typography variant="caption" color="text.secondary">{panoramaInfo.city}</Typography>
+          <Typography variant="body2" fontWeight="600" sx={{ color: '#FFFFFF' }}>
+            {panoramaInfo.title}
+          </Typography>
+          <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)' }}>
+            {panoramaInfo.city}
+          </Typography>
         </Box>
         <Box sx={{ textAlign: 'right' }}>
-          <Typography variant="body2" fontWeight="600" color="primary.main">{panoramaInfo.markersCount} propiedades visibles</Typography>
-          <Typography variant="caption" color="text.secondary">Explora el sector en 360°</Typography>
+          <Typography variant="body2" fontWeight="600" sx={{ color: '#B8860B' }}>
+            {panoramaInfo.markersCount} propiedades visibles
+          </Typography>
+          <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)' }}>
+            Explora el sector en 360°
+          </Typography>
         </Box>
       </Box>
 
-      {/* TUTORIAL DE BIENVENIDA */}
+      {/* TUTORIAL DE BIENVENIDA (Premium) */}
       <Modal
         open={showTutorial}
         onClose={handleCloseTutorial}
-        sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center',
-          zIndex: 9998,
-        }}
+        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9998 }}
       >
         <Box
           sx={{
             position: 'relative',
             width: { xs: '90%', sm: 450 },
             maxWidth: 500,
-            bgcolor: 'white',
+            bgcolor: '#1a1a1a',
             borderRadius: 4,
-            boxShadow: 24,
+            boxShadow: '0 25px 60px rgba(0,0,0,0.6)',
             p: { xs: 3, sm: 4 },
             outline: 'none',
             textAlign: 'center',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
             animation: 'fadeIn 0.3s ease-out',
             '@keyframes fadeIn': {
               from: { opacity: 0, transform: 'scale(0.9)' },
@@ -373,59 +464,62 @@ const Home = () => {
             },
           }}
         >
-          {/* Indicador de paso */}
           <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1, mb: 3 }}>
-            <Box sx={{ width: 32, height: 4, borderRadius: 2, bgcolor: tutorialStep === 1 ? 'primary.main' : 'grey.300', transition: 'all 0.3s' }} />
-            <Box sx={{ width: 32, height: 4, borderRadius: 2, bgcolor: tutorialStep === 2 ? 'primary.main' : 'grey.300', transition: 'all 0.3s' }} />
+            <Box sx={{ width: 32, height: 4, borderRadius: 2, bgcolor: tutorialStep === 1 ? '#B8860B' : 'rgba(255,255,255,0.15)', transition: 'all 0.3s' }} />
+            <Box sx={{ width: 32, height: 4, borderRadius: 2, bgcolor: tutorialStep === 2 ? '#B8860B' : 'rgba(255,255,255,0.15)', transition: 'all 0.3s' }} />
           </Box>
 
           {tutorialStep === 1 ? (
             <>
               <Box sx={{ 
-                width: 80, 
-                height: 80, 
-                mx: 'auto', 
-                mb: 2,
+                width: 80, height: 80, mx: 'auto', mb: 2,
                 borderRadius: '50%', 
-                bgcolor: '#E3F2FD',
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center' 
+                bgcolor: 'rgba(184, 134, 11, 0.15)',
+                border: '1px solid rgba(184, 134, 11, 0.3)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center' 
               }}>
-                <PanoramaIcon sx={{ fontSize: 44, color: 'primary.main' }} />
+                <PanoramaIcon sx={{ fontSize: 44, color: '#B8860B' }} />
               </Box>
-              <Typography variant="h5" fontWeight="700" gutterBottom sx={{ color: 'primary.main' }}>
-                ¡Bienvenido a Bienes 360°!
+              <Typography variant="h5" fontWeight="700" gutterBottom sx={{ color: '#FFFFFF' }}>
+                Bienvenido a Bienes 360°
               </Typography>
-              <Typography variant="body1" color="text.secondary" sx={{ mb: 3, lineHeight: 1.6 }}>
-                Primero, <strong>elige el sector</strong> donde quieres buscar tu vivienda usando el selector de la parte superior.
+              <Typography variant="body1" sx={{ mb: 3, lineHeight: 1.6, color: 'rgba(255,255,255,0.75)' }}>
+                Primero, <strong style={{ color: '#FFFFFF' }}>elige el sector</strong> donde quieres buscar tu vivienda usando el selector de la parte superior.
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 3, fontStyle: 'italic', bgcolor: 'grey.50', p: 2, borderRadius: 2 }}>
+              <Typography variant="body2" sx={{ 
+                mb: 3, fontStyle: 'italic', 
+                bgcolor: 'rgba(255,255,255,0.05)', 
+                p: 2, borderRadius: 2, 
+                color: 'rgba(255,255,255,0.6)',
+                border: '1px solid rgba(255,255,255,0.08)',
+              }}>
                 💡 Podrás rotar la imagen 360° arrastrando con el dedo o el mouse para explorar todo el sector.
               </Typography>
             </>
           ) : (
             <>
               <Box sx={{ 
-                width: 80, 
-                height: 80, 
-                mx: 'auto', 
-                mb: 2,
+                width: 80, height: 80, mx: 'auto', mb: 2,
                 borderRadius: '50%', 
-                bgcolor: '#FFF3E0',
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center' 
+                bgcolor: 'rgba(30, 58, 95, 0.2)',
+                border: '1px solid rgba(30, 58, 95, 0.4)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center' 
               }}>
-                <TuneIcon sx={{ fontSize: 44, color: '#FF9800' }} />
+                <TuneIcon sx={{ fontSize: 44, color: '#1E3A5F' }} />
               </Box>
-              <Typography variant="h5" fontWeight="700" gutterBottom sx={{ color: '#FF9800' }}>
-                ¡Excelente!
+              <Typography variant="h5" fontWeight="700" gutterBottom sx={{ color: '#FFFFFF' }}>
+                Excelente
               </Typography>
-              <Typography variant="body1" color="text.secondary" sx={{ mb: 3, lineHeight: 1.6 }}>
-                Ahora, <strong>filtra por tipo</strong> usando los botones de abajo: <strong style={{ color: STATUS_COLORS.venta }}>Venta</strong> o <strong style={{ color: STATUS_COLORS.arriendo }}>Arriendo</strong>.
+              <Typography variant="body1" sx={{ mb: 3, lineHeight: 1.6, color: 'rgba(255,255,255,0.75)' }}>
+                Ahora, <strong style={{ color: '#FFFFFF' }}>filtra por tipo</strong> usando los botones de abajo: <strong style={{ color: '#4A90E2' }}>Venta</strong> o <strong style={{ color: '#B8860B' }}>Arriendo</strong>.
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 3, fontStyle: 'italic', bgcolor: 'grey.50', p: 2, borderRadius: 2 }}>
+              <Typography variant="body2" sx={{ 
+                mb: 3, fontStyle: 'italic', 
+                bgcolor: 'rgba(255,255,255,0.05)', 
+                p: 2, borderRadius: 2, 
+                color: 'rgba(255,255,255,0.6)',
+                border: '1px solid rgba(255,255,255,0.08)',
+              }}>
                 💡 Los marcadores en el visor cambiarán de color según el filtro seleccionado.
               </Typography>
             </>
@@ -437,11 +531,11 @@ const Home = () => {
                 onClick={handleCloseTutorial}
                 variant="outlined"
                 sx={{ 
-                  flex: 1, 
-                  py: 1.5, 
-                  borderRadius: 2,
-                  fontWeight: 600,
-                  textTransform: 'none',
+                  flex: 1, py: 1.5, borderRadius: 2,
+                  fontWeight: 600, textTransform: 'none',
+                  color: 'rgba(255,255,255,0.7)',
+                  borderColor: 'rgba(255,255,255,0.2)',
+                  '&:hover': { borderColor: 'rgba(255,255,255,0.4)', bgcolor: 'rgba(255,255,255,0.05)' },
                 }}
               >
                 Saltar
@@ -451,19 +545,16 @@ const Home = () => {
               onClick={handleNextTutorialStep}
               variant="contained"
               sx={{ 
-                flex: 1, 
-                py: 1.5, 
-                borderRadius: 2,
-                fontWeight: 700,
-                textTransform: 'none',
-                fontSize: '1rem',
-                bgcolor: tutorialStep === 1 ? 'primary.main' : STATUS_COLORS.arriendo,
+                flex: 1, py: 1.5, borderRadius: 2,
+                fontWeight: 700, textTransform: 'none', fontSize: '1rem',
+                bgcolor: tutorialStep === 1 ? '#B8860B' : '#1E3A5F',
                 '&:hover': {
-                  bgcolor: tutorialStep === 1 ? 'primary.dark' : '#F57C00',
+                  bgcolor: tutorialStep === 1 ? '#9A7209' : '#162B47',
                 },
+                boxShadow: '0 4px 14px rgba(0,0,0,0.4)',
               }}
             >
-              {tutorialStep === 1 ? 'Siguiente' : '¡Entendido!'}
+              {tutorialStep === 1 ? 'Siguiente' : 'Entendido'}
             </Button>
           </Box>
         </Box>
