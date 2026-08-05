@@ -18,7 +18,7 @@ const LayerControl = ({ activeLayers, onLayerToggle, baseMap, onBaseMapChange })
     <Paper 
       elevation={0}
       sx={{
-        // CAMBIOS CLAVE: 'fixed' y zIndex máximo para estar sobre TODO (incluido el BottomNav)
+        // CAMBIOS CLAVE: 'fixed' y zIndex máximo para estar sobre TODO
         position: 'fixed',
         bottom: { xs: 90, sm: 80 }, 
         right: 16,

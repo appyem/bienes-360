@@ -82,27 +82,16 @@ const MapView = ({ filters, activeLayers, baseMap }) => {
   }
 
   return (
-    // CAMBIO CLAVE: position: fixed con inset: 0 hace que el mapa cubra TODA la pantalla
-    // ignorando el padding del MainLayout. overflow: hidden bloquea cualquier scroll.
     <Box sx={{ 
       position: 'fixed', 
-      top: 0, 
-      left: 0, 
-      right: 0, 
-      bottom: 0,
+      top: 0, left: 0, right: 0, bottom: 0,
       width: '100vw', 
-      height: '100vh', 
+      height: '100dvh', // CAMBIO CLAVE: Dynamic Viewport Height para móviles
       bgcolor: '#1a1a1a', 
       overflow: 'hidden',
       zIndex: 1,
     }}>
-      <MapContainer
-        center={MANIZALES_CENTER}
-        zoom={13}
-        style={{ width: '100%', height: '100%' }}
-        zoomControl={true}
-        scrollWheelZoom={true}
-      >
+      <MapContainer center={MANIZALES_CENTER} zoom={13} style={{ width: '100%', height: '100%' }} zoomControl={true} scrollWheelZoom={true}>
         <TileLayer key={baseMap} attribution={currentBaseMap.attribution} url={currentBaseMap.url} />
         
         {filteredProperties.map((prop) => {
@@ -130,9 +119,7 @@ const MapView = ({ filters, activeLayers, baseMap }) => {
             </Marker>
           );
         })}
-
         <InfoLayers activeLayers={activeLayers} />
-
         {filteredProperties.length === 0 && !loading && (
           <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 1000, background: 'rgba(35, 35, 35, 0.9)', backdropFilter: 'blur(10px)', padding: '20px', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.3)', textAlign: 'center', width: '80%', border: '1px solid rgba(255,255,255,0.1)' }}>
             <p style={{ margin: 0, fontWeight: '600', color: '#fff' }}>No se encontraron propiedades</p>
