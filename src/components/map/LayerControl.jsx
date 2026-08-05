@@ -18,10 +18,11 @@ const LayerControl = ({ activeLayers, onLayerToggle, baseMap, onBaseMapChange })
     <Paper 
       elevation={0}
       sx={{
-        position: 'absolute',
-        bottom: { xs: 95, sm: 80 }, // 95px en móvil para limpiar el BottomNav
+        // CAMBIOS CLAVE: 'fixed' y zIndex máximo para estar sobre TODO (incluido el BottomNav)
+        position: 'fixed',
+        bottom: { xs: 90, sm: 80 }, 
         right: 16,
-        zIndex: 1050, // CAMBIO CLAVE: Mayor que el BottomNav (1000)
+        zIndex: 9999, 
         borderRadius: 3,
         overflow: 'hidden',
         bgcolor: 'rgba(35, 35, 35, 0.9)',
