@@ -30,7 +30,7 @@ const IntroVideo = ({ onComplete }) => {
         width: '100vw',
         height: '100vh',
         zIndex: 9999,
-        bgcolor: '#000', // Fondo negro cinematográfico
+        bgcolor: '#000',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -41,7 +41,7 @@ const IntroVideo = ({ onComplete }) => {
     >
       <video
         ref={videoRef}
-        src="/iniciologo.mov" // <-- Nuevo video
+        src="/iniciologo.mov"
         onEnded={handleVideoEnd}
         autoPlay
         muted
@@ -49,10 +49,10 @@ const IntroVideo = ({ onComplete }) => {
         style={{
           width: '100%',
           height: '100%',
-          maxWidth: '100vw',
-          maxHeight: '100vh',
-          // CAMBIO CLAVE: 'contain' evita que se recorte o se pixelé por estiramiento
-          objectFit: 'contain', 
+          // CAMBIO CLAVE: Responsivo según el dispositivo
+          // Móvil (xs): 'cover' para llenar toda la pantalla
+          // PC (sm+): 'contain' para que no se pixelé ni pierda contenido
+          objectFit: window.innerWidth < 600 ? 'cover' : 'contain',
           objectPosition: 'center',
         }}
       />
