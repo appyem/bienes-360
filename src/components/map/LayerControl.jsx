@@ -18,11 +18,13 @@ const LayerControl = ({ activeLayers, onLayerToggle, baseMap, onBaseMapChange })
     <Paper 
       elevation={0}
       sx={{
-        // POSICIONAMIENTO CLAVE: Esquina inferior derecha, encima del BottomNav
+        // POSICIONAMIENTO CLAVE: 
+        // En móvil (xs) sube a 110px para NO tapar la barra inferior.
+        // En desktop (sm) se queda en 80px.
         position: 'absolute',
-        bottom: 80, // 80px desde abajo para no tapar la barra de navegación
+        bottom: { xs: 110, sm: 80 }, 
         right: 16,
-        zIndex: 800, // Por debajo del filtro superior (1000) pero sobre el mapa
+        zIndex: 800,
         borderRadius: 3,
         overflow: 'hidden',
         // Estilo cristal oscuro para coincidir con el resto de la app

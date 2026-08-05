@@ -347,20 +347,19 @@ const Home = () => {
         </Box>
       </Box>
 
-      {/* CHIPS PREMIUM (con iconos profesionales, sin emojis) */}
+            {/* CHIPS PREMIUM (Compactos, sin scroll, caben en una fila) */}
       <Box sx={{ 
         position: 'fixed', 
         top: { xs: 65, md: 80 }, 
         left: 0, right: 0, zIndex: 999, 
         px: { xs: 2, md: 4 }, py: 1.5, 
-        display: 'flex', gap: 1.5, 
-        overflowX: 'auto', 
+        display: 'flex', 
+        justifyContent: 'center', // Centrar los chips
+        gap: 1, 
         background: 'rgba(15, 15, 15, 0.55)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
-        scrollbarWidth: 'none', 
-        '&::-webkit-scrollbar': { display: 'none' } 
       }}>
         {filterChips.map((chip) => {
           const isActive = activeFilter === chip.id;
@@ -368,33 +367,29 @@ const Home = () => {
             <Chip 
               key={chip.id}
               icon={chip.icon}
-              label={chip.label.toUpperCase()}
-              size="medium" 
+              label={chip.label} // Quitamos .toUpperCase() para que sea más compacto
+              size="small" // CAMBIO CLAVE: de medium a small
               onClick={() => setActiveFilter(chip.id)}
               sx={{ 
                 borderRadius: 2, 
-                fontWeight: 700, 
-                fontSize: '0.8rem',
-                letterSpacing: '0.8px',
-                px: 2,
-                py: 2.5,
-                height: 'auto',
+                fontWeight: 600, 
+                fontSize: '0.75rem', // Más pequeño
+                px: 1.5, // Menos padding horizontal
+                height: 32, // Altura fija pequeña
                 bgcolor: isActive ? chip.color : 'rgba(255, 255, 255, 0.06)',
                 color: isActive ? '#FFFFFF' : 'rgba(255, 255, 255, 0.85)',
                 border: isActive ? 'none' : '1px solid rgba(255, 255, 255, 0.15)',
-                whiteSpace: 'nowrap', 
                 transition: 'all 0.25s ease',
                 cursor: 'pointer',
                 '& .MuiChip-icon': { 
                   color: isActive ? '#FFFFFF' : 'rgba(255, 255, 255, 0.7)',
                   ml: '4px',
+                  fontSize: '16px', // Icono más pequeño
                 },
                 '&:hover': { 
-                  transform: 'translateY(-2px)',
                   bgcolor: isActive ? chip.color : 'rgba(255, 255, 255, 0.12)',
-                  boxShadow: isActive ? `0 6px 20px ${chip.color}60` : '0 4px 12px rgba(0,0,0,0.3)',
                 },
-                boxShadow: isActive ? `0 4px 16px ${chip.color}50` : 'none',
+                boxShadow: isActive ? `0 4px 12px ${chip.color}40` : 'none',
               }} 
             />
           );
