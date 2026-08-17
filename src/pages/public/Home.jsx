@@ -334,7 +334,7 @@ const Home = () => {
           </Typography>
         </Box>
         
-        {panoramas.length > 0 && (
+                {panoramas.length > 0 && (
           <FormControl size="small" sx={{ minWidth: { xs: 120, md: 250 } }}>
             <Select
               value={selectedPanoramaId}
@@ -350,9 +350,43 @@ const Home = () => {
                 '& .MuiSelect-icon': { color: '#FFFFFF' },
                 '& .MuiSvgIcon-root': { color: '#FFFFFF' },
               }}
+              // CAMBIO CLAVE: Forzar fondo oscuro en el contenedor del menú desplegable
+              MenuProps={{
+                PaperProps: {
+                  sx: {
+                    bgcolor: '#1a1a1a',
+                    color: '#FFFFFF',
+                    borderRadius: 2,
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
+                    mt: 1,
+                  }
+                }
+              }}
             >
               {panoramas.map((pano) => (
-                <MenuItem key={pano.id} value={pano.id} sx={{ bgcolor: '#1a1a1a', color: '#FFFFFF' }}>
+                <MenuItem 
+                  key={pano.id} 
+                  value={pano.id} 
+                  sx={{ 
+                    color: '#FFFFFF',
+                    borderRadius: 1.5,
+                    mx: 1,
+                    my: 0.5,
+                    '&:hover': {
+                      bgcolor: 'rgba(184, 134, 11, 0.2)',
+                      color: '#B8860B',
+                    },
+                    '&.Mui-selected': {
+                      bgcolor: 'rgba(184, 134, 11, 0.25)',
+                      color: '#B8860B',
+                      fontWeight: 700,
+                      '&:hover': {
+                        bgcolor: 'rgba(184, 134, 11, 0.35)',
+                      }
+                    },
+                  }}
+                >
                   {pano.title}
                 </MenuItem>
               ))}

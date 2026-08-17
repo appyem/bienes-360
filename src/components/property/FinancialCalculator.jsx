@@ -4,8 +4,7 @@ import {
 } from '@mui/material';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 
-
-// Función robusta para formatear dinero en COP con puntos de miles (ej: 1.500.000)
+// Función robusta para formatear dinero en COP con puntos de miles
 const formatCOP = (value) => {
   return new Intl.NumberFormat('es-CO', { 
     style: 'currency', 
@@ -27,9 +26,9 @@ const FinancialCalculator = ({ propertyPrice }) => {
   const [interestRate, setInterestRate] = useState(13);
   const [years, setYears] = useState(15);
   
-  // Nuevos estados para costos adicionales (estilo Zillow)
+  // Estados para costos adicionales
   const [includeExtras, setIncludeExtras] = useState(false);
-  const [adminFee, setAdminFee] = useState(300000); // Valor por defecto estimado
+  const [adminFee, setAdminFee] = useState(300000);
   const [annualTaxes, setAnnualTaxes] = useState(0);
 
   // Cálculos en tiempo real
@@ -46,14 +45,12 @@ const FinancialCalculator = ({ propertyPrice }) => {
       ? loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1)
       : loanAmount / numPayments;
 
-    // Si se incluyen extras, se suman a la cuota mensual
     const monthlyExtras = includeExtras ? adminFee + (annualTaxes / 12) : 0;
     const totalMonthlyPayment = baseMonthlyPayment + monthlyExtras;
     
     const totalInterest = (baseMonthlyPayment * numPayments) - loanAmount;
     const notaryExpenses = price * 0.015; 
 
-    // Porcentaje para la barra visual (Capital vs Intereses)
     const totalPaid = (baseMonthlyPayment * numPayments);
     const principalPercent = totalPaid > 0 ? (loanAmount / totalPaid) * 100 : 0;
     const interestPercent = totalPaid > 0 ? (totalInterest / totalPaid) * 100 : 0;
@@ -73,8 +70,8 @@ const FinancialCalculator = ({ propertyPrice }) => {
 
   if (!calculations || price === 0) {
     return (
-      <Paper sx={{ p: 3, mt: 3, bgcolor: 'rgba(35, 35, 35, 0.5)', borderRadius: 3, border: '1px solid rgba(255,255,255,0.1)', textAlign: 'center' }}>
-        <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.6)' }}>
+      <Paper sx={{ p: 3, mt: 3, bgcolor: 'grey.50', borderRadius: 3, border: '1px solid', borderColor: 'grey.200', textAlign: 'center' }}>
+        <Typography variant="body2" color="text.secondary">
           Precio no disponible para simulación.
         </Typography>
       </Paper>
@@ -86,98 +83,121 @@ const FinancialCalculator = ({ propertyPrice }) => {
       p: { xs: 2, sm: 3 }, 
       mt: 3, 
       borderRadius: 3, 
-      border: '1px solid rgba(255, 255, 255, 0.1)',
-      bgcolor: 'rgba(35, 35, 35, 0.6)',
-      backdropFilter: 'blur(10px)'
+      border: '1px solid', 
+      borderColor: 'grey.200',
+      bgcolor: 'background.paper'
     }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
         <AccountBalanceIcon sx={{ color: '#B8860B' }} />
-        <Typography variant="h6" fontWeight="700" sx={{ color: '#FFFFFF' }}>
+        <Typography variant="h6" fontWeight="700" color="text.primary">
           Simulador de Crédito
         </Typography>
       </Box>
 
-      {/* Resultado Principal (Foco visual) */}
+      {/* Resultado Principal */}
       <Box sx={{ 
-        bgcolor: 'rgba(184, 134, 11, 0.15)', 
-        border: '1px solid rgba(184, 134, 11, 0.3)',
-        p: 2, 
+        bgcolor: 'rgba(184, 134, 11, 0.08)', 
+        border: '1px solid rgba(184, 134, 11, 0.2)',
+        p: { xs: 1.5, sm: 2 }, 
         borderRadius: 2, 
         textAlign: 'center',
         mb: 3
       }}>
-        <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase' }}>
+        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', display: 'block', mb: 0.5 }}>
           Cuota Mensual Estimada
         </Typography>
-        <Typography variant="h3" fontWeight="800" sx={{ color: '#B8860B', mt: 0.5, lineHeight: 1.2 }}>
+        <Typography 
+          variant="h4" 
+          sx={{ 
+            fontSize: { xs: '1.5rem', sm: '2.125rem' },
+            fontWeight: 800, 
+            color: '#B8860B', 
+            lineHeight: 1.2,
+            wordBreak: 'break-word'
+          }}
+        >
           {formatCOP(calculations.totalMonthlyPayment)}
         </Typography>
         {includeExtras && (
-          <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)' }}>
+          <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.5 }}>
             (Incluye administración e impuestos)
           </Typography>
         )}
       </Box>
 
-      {/* Sliders Híbridos (Estilo Zillow) */}
+      {/* Cuota Inicial */}
       <Box sx={{ mb: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-          <Typography variant="body2" fontWeight="600" sx={{ color: 'rgba(255,255,255,0.9)' }}>Cuota Inicial</Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1, gap: 1 }}>
+          <Typography variant="body2" fontWeight="600" color="text.primary" sx={{ flexShrink: 0 }}>Cuota Inicial</Typography>
           <TextField 
             size="small" 
             value={downPaymentPercent} 
             onChange={(e) => setDownPaymentPercent(Math.min(90, Math.max(10, Number(e.target.value))))}
             sx={{ 
-              width: 80, 
-              '& .MuiInputBase-input': { color: '#B8860B', fontWeight: 700, textAlign: 'center', p: '4px 8px' },
-              '& .MuiOutlinedInput-root': { borderRadius: 1.5, bgcolor: 'rgba(255,255,255,0.05)' },
-              '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' }
+              width: { xs: 70, sm: 80 }, 
+              flexShrink: 0,
+              '& .MuiInputBase-input': { color: '#B8860B', fontWeight: 700, textAlign: 'center', p: '4px 8px', fontSize: { xs: '0.85rem', sm: '1rem' } },
+              '& .MuiOutlinedInput-root': { borderRadius: 1.5 },
             }}
-            InputProps={{ endAdornment: <Typography sx={{ color: 'rgba(255,255,255,0.5)', mr: 1 }}>%</Typography> }}
+            slotProps={{
+              input: {
+                endAdornment: <Typography sx={{ color: 'text.secondary', mr: 1, fontSize: '0.85rem' }}>%</Typography>
+              }
+            }}
           />
         </Box>
-        <Slider value={downPaymentPercent} onChange={(e, val) => setDownPaymentPercent(val)} min={10} max={90} step={5} sx={{ color: '#B8860B', '& .MuiSlider-thumb': { width: 20, height: 20 } }} />
-        <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)', display: 'block', textAlign: 'right' }}>
+        <Slider value={downPaymentPercent} onChange={(e, val) => setDownPaymentPercent(val)} min={10} max={90} step={5} sx={{ color: '#B8860B' }} />
+        <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', textAlign: 'right' }}>
           {formatCOP(calculations.downPayment)}
         </Typography>
       </Box>
 
+      {/* Tasa de Interés */}
       <Box sx={{ mb: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-          <Typography variant="body2" fontWeight="600" sx={{ color: 'rgba(255,255,255,0.9)' }}>Tasa de Interés</Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1, gap: 1 }}>
+          <Typography variant="body2" fontWeight="600" color="text.primary" sx={{ flexShrink: 0 }}>Tasa de Interés</Typography>
           <TextField 
             size="small" 
             value={interestRate} 
             onChange={(e) => setInterestRate(Number(e.target.value))}
             sx={{ 
-              width: 80, 
-              '& .MuiInputBase-input': { color: '#fff', fontWeight: 700, textAlign: 'center', p: '4px 8px' },
-              '& .MuiOutlinedInput-root': { borderRadius: 1.5, bgcolor: 'rgba(255,255,255,0.05)' },
-              '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' }
+              width: { xs: 70, sm: 80 }, 
+              flexShrink: 0,
+              '& .MuiInputBase-input': { color: 'text.primary', fontWeight: 700, textAlign: 'center', p: '4px 8px', fontSize: { xs: '0.85rem', sm: '1rem' } },
+              '& .MuiOutlinedInput-root': { borderRadius: 1.5 },
             }}
-            InputProps={{ endAdornment: <Typography sx={{ color: 'rgba(255,255,255,0.5)', mr: 1 }}>%</Typography> }}
+            slotProps={{
+              input: {
+                endAdornment: <Typography sx={{ color: 'text.secondary', mr: 1, fontSize: '0.85rem' }}>%</Typography>
+              }
+            }}
           />
         </Box>
-        <Slider value={interestRate} onChange={(e, val) => setInterestRate(val)} min={5} max={25} step={0.1} sx={{ color: '#1E3A5F', '& .MuiSlider-thumb': { width: 20, height: 20 } }} />
+        <Slider value={interestRate} onChange={(e, val) => setInterestRate(val)} min={5} max={25} step={0.1} sx={{ color: 'primary.main' }} />
       </Box>
 
+      {/* Plazo */}
       <Box sx={{ mb: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-          <Typography variant="body2" fontWeight="600" sx={{ color: 'rgba(255,255,255,0.9)' }}>Plazo</Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1, gap: 1 }}>
+          <Typography variant="body2" fontWeight="600" color="text.primary" sx={{ flexShrink: 0 }}>Plazo</Typography>
           <TextField 
             size="small" 
             value={years} 
             onChange={(e) => setYears(Number(e.target.value))}
             sx={{ 
-              width: 80, 
-              '& .MuiInputBase-input': { color: '#fff', fontWeight: 700, textAlign: 'center', p: '4px 8px' },
-              '& .MuiOutlinedInput-root': { borderRadius: 1.5, bgcolor: 'rgba(255,255,255,0.05)' },
-              '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' }
+              width: { xs: 70, sm: 80 }, 
+              flexShrink: 0,
+              '& .MuiInputBase-input': { color: 'text.primary', fontWeight: 700, textAlign: 'center', p: '4px 8px', fontSize: { xs: '0.85rem', sm: '1rem' } },
+              '& .MuiOutlinedInput-root': { borderRadius: 1.5 },
             }}
-            InputProps={{ endAdornment: <Typography sx={{ color: 'rgba(255,255,255,0.5)', mr: 1 }}>Años</Typography> }}
+            slotProps={{
+              input: {
+                endAdornment: <Typography sx={{ color: 'text.secondary', mr: 1, fontSize: '0.85rem' }}>Años</Typography>
+              }
+            }}
           />
         </Box>
-        <Slider value={years} onChange={(e, val) => setYears(val)} min={5} max={30} step={1} sx={{ color: '#1E3A5F', '& .MuiSlider-thumb': { width: 20, height: 20 } }} />
+        <Slider value={years} onChange={(e, val) => setYears(val)} min={5} max={30} step={1} sx={{ color: 'primary.main' }} />
       </Box>
 
       {/* Switch para Costos Adicionales */}
@@ -186,47 +206,68 @@ const FinancialCalculator = ({ propertyPrice }) => {
           <Switch 
             checked={includeExtras} 
             onChange={(e) => setIncludeExtras(e.target.checked)} 
-            sx={{ '& .MuiSwitch-thumb': { bgcolor: '#fff' }, '& .MuiSwitch-track': { bgcolor: 'rgba(255,255,255,0.3)' }, '&.Mui-checked .MuiSwitch-track': { bgcolor: '#B8860B' } }} 
+            sx={{ '& .MuiSwitch-thumb': { bgcolor: '#fff' }, '& .MuiSwitch-track': { bgcolor: 'grey.300' }, '&.Mui-checked .MuiSwitch-track': { bgcolor: '#B8860B' } }} 
           />
         }
-        label={<Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>Incluir administración e impuestos</Typography>}
+        label={<Typography variant="body2" color="text.primary">Incluir administración e impuestos</Typography>}
         sx={{ mb: 2 }}
       />
 
       {includeExtras && (
-        <Box sx={{ mb: 3, p: 2, bgcolor: 'rgba(255,255,255,0.03)', borderRadius: 2, border: '1px dashed rgba(255,255,255,0.1)' }}>
+        <Box sx={{ mb: 3, p: 2, bgcolor: 'grey.50', borderRadius: 2, border: '1px dashed', borderColor: 'grey.300' }}>
           <Grid container spacing={2}>
-            <Grid item xs={6}>
-              <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)' }}>Administración (mensual)</Typography>
-              <TextField size="small" fullWidth value={adminFee} onChange={(e) => setAdminFee(Number(e.target.value))} sx={{ mt: 0.5, '& .MuiInputBase-input': { color: '#fff', fontSize: '0.85rem' }, '& .MuiOutlinedInput-root': { borderRadius: 1.5, bgcolor: 'rgba(255,255,255,0.05)' }, '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' } }} />
+            <Grid item xs={12} sm={6}>
+              <Typography variant="caption" color="text.secondary">Administración (mensual)</Typography>
+              <TextField 
+                size="small" 
+                fullWidth 
+                value={adminFee} 
+                onChange={(e) => setAdminFee(Number(e.target.value))} 
+                sx={{ 
+                  mt: 0.5, 
+                  '& .MuiInputBase-input': { color: 'text.primary', fontSize: '0.85rem' }
+                }} 
+              />
             </Grid>
-            <Grid item xs={6}>
-              <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)' }}>Impuestos (anual)</Typography>
-              <TextField size="small" fullWidth value={annualTaxes} onChange={(e) => setAnnualTaxes(Number(e.target.value))} sx={{ mt: 0.5, '& .MuiInputBase-input': { color: '#fff', fontSize: '0.85rem' }, '& .MuiOutlinedInput-root': { borderRadius: 1.5, bgcolor: 'rgba(255,255,255,0.05)' }, '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' } }} />
+            <Grid item xs={12} sm={6}>
+              <Typography variant="caption" color="text.secondary">Impuestos (anual)</Typography>
+              <TextField 
+                size="small" 
+                fullWidth 
+                value={annualTaxes} 
+                onChange={(e) => setAnnualTaxes(Number(e.target.value))} 
+                sx={{ 
+                  mt: 0.5, 
+                  '& .MuiInputBase-input': { color: 'text.primary', fontSize: '0.85rem' }
+                }} 
+              />
             </Grid>
           </Grid>
         </Box>
       )}
 
-      <Divider sx={{ my: 2, borderColor: 'rgba(255,255,255,0.1)' }} />
+      <Divider sx={{ my: 2 }} />
 
       {/* Desglose Visual */}
       <Box sx={{ mb: 2 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-          <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>Monto del crédito</Typography>
-          <Typography variant="body2" fontWeight="600" sx={{ color: '#fff' }}>{formatCOP(calculations.loanAmount)}</Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1, gap: 1 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ flexShrink: 0 }}>Monto del crédito</Typography>
+          <Typography variant="body2" fontWeight="600" color="text.primary" sx={{ textAlign: 'right', wordBreak: 'break-word' }}>
+            {formatCOP(calculations.loanAmount)}
+          </Typography>
         </Box>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-          <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>Intereses totales</Typography>
-          <Typography variant="body2" fontWeight="600" sx={{ color: '#B8860B' }}>{formatCOP(calculations.totalInterest)}</Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1, gap: 1 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ flexShrink: 0 }}>Intereses totales</Typography>
+          <Typography variant="body2" fontWeight="600" color="#B8860B" sx={{ textAlign: 'right', wordBreak: 'break-word' }}>
+            {formatCOP(calculations.totalInterest)}
+          </Typography>
         </Box>
         
-        {/* Barra visual de proporción */}
         <Box sx={{ display: 'flex', height: 8, borderRadius: 4, overflow: 'hidden', mt: 2, mb: 1 }}>
-          <Box sx={{ width: `${calculations.principalPercent}%`, bgcolor: '#1E3A5F' }} />
+          <Box sx={{ width: `${calculations.principalPercent}%`, bgcolor: 'primary.main' }} />
           <Box sx={{ width: `${calculations.interestPercent}%`, bgcolor: '#B8860B' }} />
         </Box>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'text.secondary' }}>
           <span>Capital: {Math.round(calculations.principalPercent)}%</span>
           <span>Intereses: {Math.round(calculations.interestPercent)}%</span>
         </Box>
@@ -239,17 +280,17 @@ const FinancialCalculator = ({ propertyPrice }) => {
           mt: 2, 
           py: 1.5, 
           borderRadius: 2, 
-          bgcolor: '#1E3A5F', 
+          bgcolor: 'primary.main', 
           fontWeight: 700, 
           textTransform: 'none',
-          '&:hover': { bgcolor: '#162B47' }
+          '&:hover': { bgcolor: 'primary.dark' }
         }}
-        onClick={() => window.open(`https://wa.me/573000000000?text=Hola, estoy interesado en la financiación de la propiedad: ${propertyPrice}`, '_blank')}
+        onClick={() => window.open(`https://wa.me/573000000000?text=Hola, estoy interesado en la financiación de la propiedad`, '_blank')}
       >
         Consultar financiación por WhatsApp
       </Button>
 
-      <Typography variant="caption" sx={{ display: 'block', mt: 2, textAlign: 'center', color: 'rgba(255,255,255,0.4)', fontStyle: 'italic', fontSize: '0.7rem' }}>
+      <Typography variant="caption" sx={{ display: 'block', mt: 2, textAlign: 'center', color: 'text.secondary', fontStyle: 'italic', fontSize: '0.7rem' }}>
         *Simulación informativa sujeta a estudio de crédito de la entidad financiera.
       </Typography>
     </Paper>
