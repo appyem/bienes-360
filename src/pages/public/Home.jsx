@@ -2,6 +2,8 @@ import { useRef, useEffect, useState } from 'react';
 import { Box, Typography, Chip, IconButton, TextField, InputAdornment, MenuItem, Select, FormControl, Modal, Button } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import TuneIcon from '@mui/icons-material/Tune';
+import FullscreenIcon from '@mui/icons-material/Fullscreen';
+import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import PanoramaIcon from '@mui/icons-material/Panorama';
 import HomeWorkIcon from '@mui/icons-material/HomeWork';
 import BusinessIcon from '@mui/icons-material/Business';
@@ -21,6 +23,24 @@ const STATUS_COLORS = {
   todos: '#2C3E50',      // Azul carbón profundo
   venta: '#1E3A5F',      // Azul profundo elegante
   arriendo: '#B8860B',   // Dorado oscuro / Ámbar
+};
+
+
+// Función para formatear precios de forma abreviada (K = miles, M = millones)
+const formatPrice = (price) => {
+  const num = typeof price === 'string' ? Number(price.replace(/[^0-9.-]+/g, '')) : Number(price);
+  if (isNaN(num)) return `$${price}`;
+  
+  if (num >= 1000000) {
+    const millions = num / 1000000;
+    // Si es exacto (ej: 50M) no muestra decimales, si no, muestra 1 decimal
+    return `$${millions % 1 === 0 ? millions : millions.toFixed(1)}M`;
+  }
+  if (num >= 1000) {
+    const thousands = num / 1000;
+    return `$${thousands % 1 === 0 ? thousands : thousands.toFixed(1)}K`;
+  }
+  return `$${num.toLocaleString('es-CO')}`;
 };
 
 const getStatusColor = (status) => {
@@ -51,6 +71,33 @@ const Home = () => {
   });
   
   const [tutorialStep, setTutorialStep] = useState(1);
+
+   // Estado de pantalla completa
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const toggleFullscreen = () => {
+    const viewerElement = document.getElementById('panorama-viewer');
+    if (!viewerElement) return;
+
+    if (!document.fullscreenElement) {
+      viewerElement.requestFullscreen().catch(err => {
+        console.warn('Error al entrar en pantalla completa:', err);
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  };
+
+  // Escuchar cambios de pantalla completa (cuando el usuario presiona Esc o sale)
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
 
   const handleCloseTutorial = () => {
     setShowTutorial(false);
@@ -133,7 +180,7 @@ const Home = () => {
             id: doc.id,
             propertyId: doc.id,
             title: data.title,
-            price: data.priceFormatted || `$${data.price}`,
+                price: formatPrice(data.price),
             status: data.status,
             neighborhood: data.neighborhood,
             area: data.area,
@@ -396,10 +443,60 @@ const Home = () => {
         })}
       </Box>
 
+            {/* BOTÓN DE PANTALLA COMPLETA */}
+      <Box
+        onClick={toggleFullscreen}
+        sx={{
+          position: 'fixed',
+          bottom: { xs: 90, sm: 80 },
+          left: 16,
+          zIndex: 1050,
+          width: 48,
+          height: 48,
+          borderRadius: '50%',
+          bgcolor: 'rgba(35, 35, 35, 0.85)',
+          backdropFilter: 'blur(24px)',
+          border: '1px solid rgba(255, 255, 255, 0.15)',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          transition: 'all 0.2s ease',
+          '&:hover': {
+            bgcolor: 'rgba(184, 134, 11, 0.3)',
+            borderColor: '#B8860B',
+            transform: 'scale(1.1)',
+          },
+          '&:active': {
+            transform: 'scale(0.95)',
+          },
+        }}
+      >
+        {isFullscreen ? (
+          <FullscreenExitIcon sx={{ color: '#fff', fontSize: 28 }} />
+        ) : (
+          <FullscreenIcon sx={{ color: '#fff', fontSize: 28 }} />
+        )}
+      </Box>
+
       {/* VISOR 360° */}
-      <Box id="panorama-viewer" sx={{ 
+            <Box id="panorama-viewer" sx={{ 
         position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1, 
-        '& .psv-canvas': { cursor: 'grab', '&:active': { cursor: 'grabbing' } } 
+        '& .psv-canvas': { cursor: 'grab', '&:active': { cursor: 'grabbing' } },
+        // Cuando está en pantalla completa, el visor ocupa todo y se pone por encima de todo
+        '&:fullscreen': {
+          width: '100vw',
+          height: '100vh',
+          zIndex: 99999,
+          bgcolor: '#000',
+        },
+        '&:-webkit-full-screen': {
+          width: '100vw',
+          height: '100vh',
+          zIndex: 99999,
+          bgcolor: '#000',
+        },
       }} />
 
       {/* MODAL DE PROPIEDAD */}
