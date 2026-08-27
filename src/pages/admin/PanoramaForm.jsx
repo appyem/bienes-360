@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { 
-  Box, Typography, TextField, Button, Paper, Alert, InputLabel 
+  Box, Typography, TextField, Button, Paper, Alert, Select, MenuItem 
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { uploadPanorama } from '../../services/panoramaService';
@@ -8,7 +8,7 @@ import { uploadPanorama } from '../../services/panoramaService';
 const PanoramaForm = () => {
   const [formData, setFormData] = useState({
     title: '',
-    city: '',
+    city: 'Manizales', // Valor por defecto seguro
     neighborhood: '',
     sector: '',
     description: '',
@@ -37,11 +37,13 @@ const PanoramaForm = () => {
 
     if (result.success) {
       setMessage({ type: 'success', text: '¡Panorámica subida exitosamente! ID: ' + result.id });
+      // Resetear el formulario con el valor por defecto de ciudad
       setFormData({
-        title: '', city: '', neighborhood: '', sector: '', description: '', keywords: '', imageFile: null,
+        title: '', city: 'Manizales', neighborhood: '', sector: '', description: '', keywords: '', imageFile: null,
       });
       // Resetear el input file manualmente
-      document.getElementById('panorama-file-input').value = '';
+      const fileInput = document.getElementById('panorama-file-input');
+      if (fileInput) fileInput.value = '';
     } else {
       setMessage({ type: 'error', text: 'Error: ' + result.error });
     }
@@ -71,7 +73,9 @@ const PanoramaForm = () => {
       >
         {/* Carga de Imagen */}
         <Box sx={{ mb: 4, textAlign: 'center' }}>
-          <InputLabel sx={{ mb: 1, fontWeight: 600 }}>Imagen 360° (Equirectangular)</InputLabel>
+          <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: 'text.secondary' }}>
+            Imagen 360° (Equirectangular) <span style={{ color: 'red' }}>*</span>
+          </Typography>
           <Button
             component="label"
             variant="outlined"
@@ -93,7 +97,26 @@ const PanoramaForm = () => {
         {/* Campos de Texto */}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 3 }}>
           <TextField name="title" label="Título del Sector" value={formData.title} onChange={handleChange} required fullWidth />
-          <TextField name="city" label="Ciudad" value={formData.city} onChange={handleChange} required fullWidth />
+          
+          {/* SELECTOR DE CIUDAD A PRUEBA DE FALLOS */}
+          <Box>
+            <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary', fontWeight: 600 }}>
+              Ciudad <span style={{ color: 'red' }}>*</span>
+            </Typography>
+            <Select
+              name="city"
+              value={formData.city}
+              onChange={handleChange}
+              required
+              fullWidth
+              sx={{ borderRadius: 2, bgcolor: 'background.paper', '& .MuiSelect-select': { py: 1.5 } }}
+            >
+              <MenuItem value="Armenia">Armenia</MenuItem>
+              <MenuItem value="Manizales">Manizales</MenuItem>
+              <MenuItem value="Pereira">Pereira</MenuItem>
+            </Select>
+          </Box>
+
           <TextField name="neighborhood" label="Barrio" value={formData.neighborhood} onChange={handleChange} required fullWidth />
           <TextField name="sector" label="Zona / Sector" value={formData.sector} onChange={handleChange} fullWidth />
         </Box>

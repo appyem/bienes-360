@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
-  Box, Typography, TextField, Button, Paper, Alert, CircularProgress, InputLabel 
+  Box, Typography, TextField, Button, Paper, Alert, CircularProgress, Select, MenuItem 
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -19,7 +19,7 @@ const PanoramaEditForm = () => {
   
   const [formData, setFormData] = useState({
     title: '',
-    city: '',
+    city: 'Manizales', // Valor por defecto seguro
     neighborhood: '',
     sector: '',
     description: '',
@@ -39,7 +39,7 @@ const PanoramaEditForm = () => {
           const data = docSnap.data();
           setFormData({
             title: data.title || '',
-            city: data.city || '',
+            city: data.city ? data.city.charAt(0).toUpperCase() + data.city.slice(1).toLowerCase() : 'Manizales',
             neighborhood: data.neighborhood || '',
             sector: data.sector || '',
             description: data.description || '',
@@ -89,7 +89,6 @@ const PanoramaEditForm = () => {
       
       if (result.success) {
         setMessage({ type: 'success', text: '¡Panorámica actualizada exitosamente!' });
-        // Opcional: redirigir a la lista después de 1.5 segundos
         setTimeout(() => navigate('/admin/panoramas'), 1500);
       } else {
         setMessage({ type: 'error', text: 'Error al actualizar: ' + result.error });
@@ -150,21 +149,33 @@ const PanoramaEditForm = () => {
             fullWidth 
           />
           
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <TextField 
-              name="city" 
-              label="Ciudad" 
-              value={formData.city} 
-              onChange={handleChange} 
-              required 
-              fullWidth 
-            />
+          <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
+            {/* SELECTOR DE CIUDAD A PRUEBA DE FALLOS PARA EDICIÓN */}
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary', fontWeight: 600 }}>
+                Ciudad <span style={{ color: 'red' }}>*</span>
+              </Typography>
+              <Select
+                name="city"
+                value={formData.city || 'Manizales'}
+                onChange={handleChange}
+                required
+                fullWidth
+                sx={{ borderRadius: 2, bgcolor: 'background.paper', '& .MuiSelect-select': { py: 1.5 } }}
+              >
+                <MenuItem value="Armenia">Armenia</MenuItem>
+                <MenuItem value="Manizales">Manizales</MenuItem>
+                <MenuItem value="Pereira">Pereira</MenuItem>
+              </Select>
+            </Box>
+            
             <TextField 
               name="neighborhood" 
               label="Barrio" 
               value={formData.neighborhood} 
               onChange={handleChange} 
               fullWidth 
+              sx={{ flex: 1 }}
             />
           </Box>
 
@@ -196,9 +207,9 @@ const PanoramaEditForm = () => {
           />
 
           <Box sx={{ mt: 2, p: 3, bgcolor: 'grey.50', borderRadius: 2, border: '1px dashed', borderColor: 'grey.300' }}>
-            <InputLabel sx={{ mb: 1, fontWeight: 600, color: 'primary.main' }}>
+            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, color: 'primary.main' }}>
               🔄 Reemplazar Imagen 360° (Opcional)
-            </InputLabel>
+            </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
               Si seleccionas una nueva imagen, la anterior se eliminará automáticamente de Firebase Storage.
             </Typography>
@@ -219,7 +230,7 @@ const PanoramaEditForm = () => {
             </Button>
           </Box>
 
-          <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+          <Box sx={{ display: 'flex', gap: 2, mt: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
             <Button 
               type="button" 
               variant="outlined" 

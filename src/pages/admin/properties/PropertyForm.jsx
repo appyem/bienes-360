@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
-  Box, Typography, TextField, Button, Grid, FormControl,
-  InputLabel, Select, MenuItem, Paper, IconButton, ImageList,
-  ImageListItem, Alert, CircularProgress
+  Box, Typography, TextField, Button, Grid, Select, MenuItem, 
+  Paper, IconButton, ImageList, ImageListItem, Alert, CircularProgress
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { createProperty, updateProperty, getPropertyById } from '../../../services/propertyService';
+
 
 const PropertyForm = () => {
   const { id } = useParams();
@@ -19,7 +19,6 @@ const PropertyForm = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // 1. AGREGADO image360 AL ESTADO INICIAL
   const [formData, setFormData] = useState({
     title: '', description: '', price: '', area: '', rooms: '',
     baths: '', garages: '', type: 'Apartamento', status: 'disponible',
@@ -34,13 +33,14 @@ const PropertyForm = () => {
     if (!isEditing) return;
     
     let isMounted = true;
-
     const loadProperty = async () => {
       try {
         if (isMounted) setLoading(true);
         const property = await getPropertyById(id);
         if (isMounted && property) {
-          // 2. AGREGADO image360 AL CARGAR DATOS
+          const cityValue = property.city || 'Manizales';
+          console.log('🔍 [DEBUG 1] Ciudad cargada de la BD:', cityValue, '| Tipo:', typeof cityValue);
+          
           setFormData({
             title: property.title || '',
             description: property.description || '',
@@ -53,7 +53,7 @@ const PropertyForm = () => {
             status: property.status || 'disponible',
             address: property.address || '',
             neighborhood: property.neighborhood || '',
-            city: property.city || 'Manizales',
+            city: cityValue,
             latitude: property.latitude || '',
             longitude: property.longitude || '',
             image360: property.image360 || ''
@@ -67,16 +67,18 @@ const PropertyForm = () => {
         if (isMounted) setLoading(false);
       }
     };
-
     loadProperty();
-
-    return () => {
-      isMounted = false;
-    };
+    return () => { isMounted = false; };
   }, [id, isEditing]);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    console.log('🔍 [DEBUG 2] handleChange disparado | Campo:', name, '| Nuevo valor:', value);
+    setFormData((prev) => {
+      const newData = { ...prev, [name]: value };
+      console.log('🔍 [DEBUG 3] Nuevo estado formData.city:', newData.city);
+      return newData;
+    });
   };
 
   const handleImageChange = (e) => {
@@ -122,6 +124,9 @@ const PropertyForm = () => {
       </Box>
     );
   }
+
+  // LOG DE RENDERIZADO
+  console.log('🔍 [DEBUG 4] Renderizando formulario | formData.city actual:', formData.city);
 
   return (
     <Box sx={{ py: 4 }}>
@@ -173,30 +178,26 @@ const PropertyForm = () => {
             </Grid>
 
             <Grid item xs={12} md={6}>
-              <FormControl fullWidth required>
-                <InputLabel>Tipo</InputLabel>
-                <Select name="type" value={formData.type} label="Tipo" onChange={handleChange}>
-                  <MenuItem value="Apartamento">Apartamento</MenuItem>
-                  <MenuItem value="Casa">Casa</MenuItem>
-                  <MenuItem value="Local">Local</MenuItem>
-                  <MenuItem value="Oficina">Oficina</MenuItem>
-                  <MenuItem value="Bodega">Bodega</MenuItem>
-                  <MenuItem value="Lote">Lote</MenuItem>
-                </Select>
-              </FormControl>
+              <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary', fontWeight: 500 }}>Tipo <span style={{ color: 'red' }}>*</span></Typography>
+              <Select name="type" value={formData.type} onChange={handleChange} fullWidth required sx={{ bgcolor: 'background.paper', borderRadius: 1, '& .MuiSelect-select': { py: 1.5 } }}>
+                <MenuItem value="Apartamento">Apartamento</MenuItem>
+                <MenuItem value="Casa">Casa</MenuItem>
+                <MenuItem value="Local">Local</MenuItem>
+                <MenuItem value="Oficina">Oficina</MenuItem>
+                <MenuItem value="Bodega">Bodega</MenuItem>
+                <MenuItem value="Lote">Lote</MenuItem>
+              </Select>
             </Grid>
 
             <Grid item xs={12} md={6}>
-              <FormControl fullWidth required>
-                <InputLabel>Estado</InputLabel>
-                <Select name="status" value={formData.status} label="Estado" onChange={handleChange}>
-                  <MenuItem value="disponible">Disponible</MenuItem>
-                  <MenuItem value="vendido">Vendido</MenuItem>
-                  <MenuItem value="arrendado">Arrendado</MenuItem>
-                  <MenuItem value="reservado">Reservado</MenuItem>
-                  <MenuItem value="proximamente">Próximamente</MenuItem>
-                </Select>
-              </FormControl>
+              <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary', fontWeight: 500 }}>Estado <span style={{ color: 'red' }}>*</span></Typography>
+              <Select name="status" value={formData.status} onChange={handleChange} fullWidth required sx={{ bgcolor: 'background.paper', borderRadius: 1, '& .MuiSelect-select': { py: 1.5 } }}>
+                <MenuItem value="disponible">Disponible</MenuItem>
+                <MenuItem value="vendido">Vendido</MenuItem>
+                <MenuItem value="arrendado">Arrendado</MenuItem>
+                <MenuItem value="reservado">Reservado</MenuItem>
+                <MenuItem value="proximamente">Próximamente</MenuItem>
+              </Select>
             </Grid>
 
             <Grid item xs={12}>
@@ -212,7 +213,25 @@ const PropertyForm = () => {
             </Grid>
 
             <Grid item xs={12} md={6}>
-              <TextField fullWidth label="Ciudad" name="city" value={formData.city} onChange={handleChange} required />
+              <Typography variant="subtitle2" sx={{ mb: 1, color: 'text.secondary', fontWeight: 500 }}>
+                Ciudad <span style={{ color: 'red' }}>*</span>
+              </Typography>
+              <Select
+                name="city"
+                value={formData.city || 'Manizales'}
+                onChange={handleChange}
+                fullWidth
+                required
+                sx={{ 
+                  bgcolor: 'background.paper',
+                  borderRadius: 1,
+                  '& .MuiSelect-select': { py: 1.5 }
+                }}
+              >
+                <MenuItem value="Armenia">Armenia</MenuItem>
+                <MenuItem value="Manizales">Manizales</MenuItem>
+                <MenuItem value="Pereira">Pereira</MenuItem>
+              </Select>
             </Grid>
 
             <Grid item xs={12} md={6}>

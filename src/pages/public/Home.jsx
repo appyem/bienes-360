@@ -5,6 +5,7 @@ import TuneIcon from '@mui/icons-material/Tune';
 import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import PanoramaIcon from '@mui/icons-material/Panorama';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
 import HomeWorkIcon from '@mui/icons-material/HomeWork';
 import BusinessIcon from '@mui/icons-material/Business';
 import KeyIcon from '@mui/icons-material/Key';
@@ -43,18 +44,7 @@ const formatPrice = (price) => {
   return `$${num.toLocaleString('es-CO')}`;
 };
 
-const getStatusColor = (status) => {
-  const colors = {
-    disponible: '#2C3E50',
-    venta: '#1E3A5F',
-    arriendo: '#B8860B',
-    cambio: '#6A5ACD',
-    subasta: '#DAA520',
-    reservado: '#8B0000',
-    vendido: '#4A4A4A',
-  };
-  return colors[status] || colors.disponible;
-};
+
 
 const Home = () => {
   const viewerRef = useRef(null);
@@ -64,6 +54,7 @@ const Home = () => {
   const [panoramaInfo, setPanoramaInfo] = useState({ title: 'Cargando...', city: '', markersCount: 0 });
   
   const [activeFilter, setActiveFilter] = useState('todos');
+  const [selectedCity, setSelectedCity] = useState('todas'); // Nueva ciudad seleccionada
   
   const [showTutorial, setShowTutorial] = useState(() => {
     const hasSeenTutorial = localStorage.getItem('hasSeenTutorial');
@@ -112,14 +103,26 @@ const Home = () => {
     }
   };
 
-  useEffect(() => {
+    useEffect(() => {
     const loadAllPanoramas = async () => {
       try {
-        const panoramasQuery = query(
-          collection(db, 'panoramas'),
-          where('isActive', '==', true),
-          orderBy('createdAt', 'desc')
-        );
+        // Construir la consulta según la ciudad seleccionada
+        let panoramasQuery;
+        if (selectedCity === 'todas') {
+          panoramasQuery = query(
+            collection(db, 'panoramas'),
+            where('isActive', '==', true),
+            orderBy('createdAt', 'desc')
+          );
+        } else {
+          panoramasQuery = query(
+            collection(db, 'panoramas'),
+            where('isActive', '==', true),
+            where('city', '==', selectedCity),
+            orderBy('createdAt', 'desc')
+          );
+        }
+
         const snapshot = await getDocs(panoramasQuery);
         const list = snapshot.docs.map(doc => ({
           id: doc.id,
@@ -129,6 +132,8 @@ const Home = () => {
         setPanoramas(list);
         if (list.length > 0) {
           setSelectedPanoramaId(list[0].id);
+        } else {
+          setSelectedPanoramaId('');
         }
       } catch (error) {
         console.error('❌ Error cargando panorámicas:', error);
@@ -136,7 +141,7 @@ const Home = () => {
     };
     
     loadAllPanoramas();
-  }, []);
+  }, [selectedCity]); // CAMBIO CLAVE: Ahora depende de selectedCity
 
   useEffect(() => {
     if (!selectedPanoramaId || panoramas.length === 0) return;
@@ -214,23 +219,98 @@ const Home = () => {
         return true;
       });
 
-      const pluginMarkers = filteredMarkers.map(marker => ({
-        id: marker.id,
-        position: {
-          yaw: toRad(marker.position.yaw),
-          pitch: toRad(marker.position.pitch),
-        },
-        html: `
-          <div class="psv-custom-marker" 
-               onclick="window._handlePsvMarkerClick('${marker.id}')" 
-               ontouchend="window._handlePsvMarkerClick('${marker.id}')" 
-               style="background: radial-gradient(circle, ${getStatusColor(marker.status)} 0%, rgba(0,0,0,0) 70%); box-shadow: 0 0 20px ${getStatusColor(marker.status)}, 0 0 40px ${getStatusColor(marker.status)}40, inset 0 2px 4px rgba(255,255,255,0.4); border: 2px solid rgba(255,255,255,0.8); pointer-events: auto !important; cursor: pointer !important; z-index: 9999 !important; touch-action: manipulation !important; -webkit-tap-highlight-color: transparent;">
-            <div class="psv-marker-price" style="pointer-events: none !important;">${marker.price}</div>
-          </div>
-        `,
-        data: marker,
-        clickable: true,
-      }));
+            // ==========================================
+      // PEGUE ESTE BLOQUE NUEVO (DESPUÉS)
+      // ==========================================
+      
+            // Función auxiliar con colores de ALTO CONTRASTE para entornos 360°
+      const getMarker360Colors = (status) => {
+        if (status === 'venta') return { 
+          border: '#FF007F', 
+          glow: 'rgba(255, 0, 127, 0.8)', 
+          pulseClass: 'pulse-magenta' 
+        };
+        if (status === 'arriendo') return { 
+          border: '#00E5FF', 
+          glow: 'rgba(0, 229, 255, 0.8)', 
+          pulseClass: 'pulse-cyan' 
+        };
+        return { 
+          border: '#B8860B', 
+          glow: 'rgba(184, 134, 11, 0.8)', 
+          pulseClass: 'pulse-default' 
+        };
+      };
+
+      const pluginMarkers = filteredMarkers.map(marker => {
+        const colors = getMarker360Colors(marker.status);
+        
+        return {
+          id: marker.id,
+          position: {
+            yaw: toRad(marker.position.yaw),
+            pitch: toRad(marker.position.pitch),
+          },
+          html: `
+            <style>
+              @keyframes markerBounce360 {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-10px); }
+              }
+              @keyframes pulse-magenta {
+                0%, 100% { box-shadow: 0 0 15px rgba(255, 0, 127, 0.5), 0 0 30px rgba(255, 0, 127, 0.3); transform: scale(1); }
+                50% { box-shadow: 0 0 40px rgba(255, 0, 127, 1), 0 0 70px rgba(255, 0, 127, 0.7); transform: scale(1.08); }
+              }
+              @keyframes pulse-cyan {
+                0%, 100% { box-shadow: 0 0 15px rgba(0, 229, 255, 0.5), 0 0 30px rgba(0, 229, 255, 0.3); transform: scale(1); }
+                50% { box-shadow: 0 0 40px rgba(0, 229, 255, 1), 0 0 70px rgba(0, 229, 255, 0.7); transform: scale(1.08); }
+              }
+              .marker-360-wrapper {
+                animation: markerBounce360 2.5s infinite ease-in-out;
+                cursor: pointer !important;
+                touch-action: manipulation !important;
+                -webkit-tap-highlight-color: transparent;
+              }
+              .marker-circle {
+                animation-duration: 1.5s;
+                animation-iteration-count: infinite;
+                animation-timing-function: ease-in-out;
+              }
+              .pulse-magenta { animation-name: pulse-magenta; }
+              .pulse-cyan { animation-name: pulse-cyan; }
+            </style>
+            <div class="marker-360-wrapper" 
+                 onclick="window._handlePsvMarkerClick('${marker.id}')" 
+                 ontouchend="window._handlePsvMarkerClick('${marker.id}')"
+                 style="position: relative; width: 60px; height: 76px; display: flex; flex-direction: column; align-items: center;">
+              
+              <!-- Círculo superior con animación de latido en el nuevo color -->
+              <div class="marker-circle ${colors.pulseClass}" style="
+                width: 60px; height: 60px; border-radius: 50%; background: #ffffff;
+                border: 4px solid ${colors.border};
+                display: flex; align-items: center; justify-content: center;
+                position: relative; z-index: 2;
+              ">
+                <!-- Logo grande con sombra para máximo contraste -->
+                <img src="/logo.png" alt="Logo" style="width: 40px; height: 40px; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));" />
+              </div>
+              
+              <!-- Cola triangular del marcador -->
+              <div style="
+                width: 0; height: 0;
+                border-left: 12px solid transparent;
+                border-right: 12px solid transparent;
+                border-top: 16px solid ${colors.border};
+                margin-top: -5px;
+                z-index: 1;
+                filter: drop-shadow(0 4px 4px rgba(0,0,0,0.4));
+              "></div>
+            </div>
+          `,
+          data: marker,
+          clickable: true,
+        };
+      });
 
       const newViewer = new Viewer({
         container: container,
@@ -333,6 +413,61 @@ const Home = () => {
             Bienes 360°
           </Typography>
         </Box>
+
+                         {/* SELECTOR DE CIUDAD */}
+        <FormControl size="small" sx={{ minWidth: { xs: 120, md: 180 } }}>
+          <Select
+            value={selectedCity}
+            onChange={(e) => setSelectedCity(e.target.value)}
+            displayEmpty
+            startAdornment={<LocationOnIcon sx={{ mr: 1, color: '#B8860B' }} />}
+            sx={{ 
+              bgcolor: 'rgba(255, 255, 255, 0.08)',
+              color: '#FFFFFF',
+              borderRadius: 2,
+              '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.15)' },
+              '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.3)' },
+              '& .MuiSelect-icon': { color: '#FFFFFF' },
+              '& .MuiSvgIcon-root': { color: '#FFFFFF' },
+            }}
+            MenuProps={{
+              PaperProps: {
+                sx: {
+                  bgcolor: '#1a1a1a !important',
+                  color: '#FFFFFF !important',
+                  borderRadius: 2,
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
+                  mt: 1,
+                  '& .MuiList-root': {
+                    bgcolor: '#1a1a1a !important',
+                  },
+                  '& .MuiMenuItem-root': {
+                    color: '#FFFFFF !important',
+                    bgcolor: 'transparent !important',
+                    '&:hover': {
+                      bgcolor: 'rgba(184, 134, 11, 0.2) !important',
+                    },
+                    '&.Mui-selected': {
+                      bgcolor: 'rgba(184, 134, 11, 0.25) !important',
+                      color: '#B8860B !important',
+                      '&:hover': {
+                        bgcolor: 'rgba(184, 134, 11, 0.35) !important',
+                      }
+                    }
+                  }
+                }
+              }
+            }}
+          >
+            <MenuItem value="todas">🌎 Todas las ciudades</MenuItem>
+            <MenuItem value="Armenia">Armenia</MenuItem>
+            <MenuItem value="Manizales">Manizales</MenuItem>
+            <MenuItem value="Pereira">Pereira</MenuItem>
+          </Select>
+        </FormControl>
+
+
         
                 {panoramas.length > 0 && (
           <FormControl size="small" sx={{ minWidth: { xs: 120, md: 250 } }}>
