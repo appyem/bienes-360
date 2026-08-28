@@ -375,25 +375,30 @@ const Home = () => {
       // Fondo oscuro elegante con degradado sutil
       background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%)',
     }}>
-      {/* BARRA SUPERIOR PREMIUM (Glassmorphism refinado) */}
+           {/* BARRA SUPERIOR PREMIUM (Optimizada para Móvil y PC) */}
       <Box sx={{ 
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000, 
         px: { xs: 2, md: 4 }, py: { xs: 1.5, md: 2 }, 
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, 
-        background: 'rgba(15, 15, 15, 0.65)',
+        display: 'flex', 
+        flexDirection: { xs: 'column', md: 'row' }, // En móvil se apila, en PC se alinea
+        alignItems: { xs: 'stretch', md: 'center' },
+        justifyContent: 'space-between', 
+        gap: { xs: 1.5, md: 2 }, 
+        background: 'rgba(15, 15, 15, 0.85)', // Un poco más oscuro en móvil para legibilidad
         backdropFilter: 'blur(24px) saturate(180%)',
         WebkitBackdropFilter: 'blur(24px) saturate(180%)',
         borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
         boxShadow: '0 4px 30px rgba(0, 0, 0, 0.3)',
       }}>
         
+        {/* Fila 1: Logo y Título */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <Box 
             component="img" 
             src="/logo.png" 
             alt="Logo Bienes 360°"
             sx={{ 
-              height: { xs: 32, md: 40 }, 
+              height: { xs: 28, md: 40 }, 
               width: 'auto', 
               objectFit: 'contain',
               filter: 'brightness(1.1) contrast(1.05)',
@@ -404,6 +409,7 @@ const Home = () => {
             variant="h6" 
             fontWeight="700" 
             sx={{ 
+              display: { xs: 'none', sm: 'block' }, // Ocultar texto en móviles muy pequeños
               letterSpacing: '0.5px', 
               whiteSpace: 'nowrap',
               color: '#FFFFFF',
@@ -414,163 +420,145 @@ const Home = () => {
           </Typography>
         </Box>
 
-                         {/* SELECTOR DE CIUDAD */}
-        <FormControl size="small" sx={{ minWidth: { xs: 120, md: 180 } }}>
-          <Select
-            value={selectedCity}
-            onChange={(e) => setSelectedCity(e.target.value)}
-            displayEmpty
-            startAdornment={<LocationOnIcon sx={{ mr: 1, color: '#B8860B' }} />}
-            sx={{ 
-              bgcolor: 'rgba(255, 255, 255, 0.08)',
-              color: '#FFFFFF',
-              borderRadius: 2,
-              '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.15)' },
-              '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.3)' },
-              '& .MuiSelect-icon': { color: '#FFFFFF' },
-              '& .MuiSvgIcon-root': { color: '#FFFFFF' },
-            }}
-            MenuProps={{
-              PaperProps: {
-                sx: {
-                  bgcolor: '#1a1a1a !important',
-                  color: '#FFFFFF !important',
-                  borderRadius: 2,
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
-                  mt: 1,
-                  '& .MuiList-root': {
-                    bgcolor: '#1a1a1a !important',
-                  },
-                  '& .MuiMenuItem-root': {
-                    color: '#FFFFFF !important',
-                    bgcolor: 'transparent !important',
-                    '&:hover': {
-                      bgcolor: 'rgba(184, 134, 11, 0.2) !important',
-                    },
-                    '&.Mui-selected': {
-                      bgcolor: 'rgba(184, 134, 11, 0.25) !important',
-                      color: '#B8860B !important',
-                      '&:hover': {
-                        bgcolor: 'rgba(184, 134, 11, 0.35) !important',
-                      }
+        {/* Fila 2: Filtros Compactos con Etiquetas */}
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'row', 
+          gap: 1.5, 
+          width: { xs: '100%', md: 'auto' } // En móvil ocupa todo el ancho disponible
+        }}>
+          
+          {/* SELECTOR DE CIUDAD */}
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', ml: 1, mb: 0.5, display: 'block', fontSize: '0.7rem' }}>
+              Ciudad
+            </Typography>
+            <FormControl size="small" fullWidth>
+              <Select
+                value={selectedCity}
+                onChange={(e) => setSelectedCity(e.target.value)}
+                displayEmpty
+                startAdornment={<LocationOnIcon sx={{ mr: 0.5, color: '#B8860B', fontSize: 18 }} />}
+                sx={{ 
+                  bgcolor: 'rgba(255, 255, 255, 0.08)',
+                  color: '#FFFFFF',
+                  borderRadius: 1.5,
+                  height: 36, // Altura fija compacta
+                  '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.15)' },
+                  '& .MuiSelect-select': { py: 0.5, fontSize: '0.85rem' },
+                  '& .MuiSelect-icon': { color: '#FFFFFF' },
+                }}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      bgcolor: '#1a1a1a !important',
+                      color: '#FFFFFF !important',
+                      borderRadius: 2,
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      '& .MuiMenuItem-root': { color: '#FFFFFF !important', '&:hover': { bgcolor: 'rgba(184, 134, 11, 0.2) !important' } }
                     }
                   }
-                }
-              }
-            }}
-          >
-            <MenuItem value="todas">🌎 Todas las ciudades</MenuItem>
-            <MenuItem value="Armenia">Armenia</MenuItem>
-            <MenuItem value="Manizales">Manizales</MenuItem>
-            <MenuItem value="Pereira">Pereira</MenuItem>
-          </Select>
-        </FormControl>
+                }}
+              >
+                <MenuItem value="todas" sx={{ fontSize: '0.85rem' }}>🌎 Todas</MenuItem>
+                <MenuItem value="Armenia" sx={{ fontSize: '0.85rem' }}>Armenia</MenuItem>
+                <MenuItem value="Manizales" sx={{ fontSize: '0.85rem' }}>Manizales</MenuItem>
+                <MenuItem value="Pereira" sx={{ fontSize: '0.85rem' }}>Pereira</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
 
+          {/* SELECTOR DE ZONA / SECTOR */}
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', ml: 1, mb: 0.5, display: 'block', fontSize: '0.7rem' }}>
+              Zona / Sector
+            </Typography>
+            <FormControl size="small" fullWidth>
+              <Select
+                value={selectedPanoramaId}
+                onChange={handlePanoramaChange}
+                displayEmpty
+                startAdornment={<PanoramaIcon sx={{ mr: 0.5, color: '#B8860B', fontSize: 18 }} />}
+                sx={{ 
+                  bgcolor: 'rgba(255, 255, 255, 0.08)',
+                  color: '#FFFFFF',
+                  borderRadius: 1.5,
+                  height: 36,
+                  '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.15)' },
+                  '& .MuiSelect-select': { py: 0.5, fontSize: '0.85rem' },
+                  '& .MuiSelect-icon': { color: '#FFFFFF' },
+                }}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      bgcolor: '#1a1a1a !important',
+                      color: '#FFFFFF !important',
+                      borderRadius: 2,
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      maxHeight: 300,
+                      '& .MuiMenuItem-root': { color: '#FFFFFF !important', '&:hover': { bgcolor: 'rgba(184, 134, 11, 0.2) !important' } }
+                    }
+                  }
+                }}
+              >
+                {panoramas.length > 0 ? (
+                  panoramas.map((pano) => (
+                    <MenuItem key={pano.id} value={pano.id} sx={{ fontSize: '0.85rem' }}>
+                      {pano.title}
+                    </MenuItem>
+                  ))
+                ) : (
+                  <MenuItem value="" disabled sx={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)' }}>
+                    Sin zonas
+                  </MenuItem>
+                )}
+              </Select>
+            </FormControl>
+          </Box>
+        </Box>
 
-        
-                {panoramas.length > 0 && (
-          <FormControl size="small" sx={{ minWidth: { xs: 120, md: 250 } }}>
-            <Select
-              value={selectedPanoramaId}
-              onChange={handlePanoramaChange}
-              displayEmpty
-              startAdornment={<PanoramaIcon sx={{ mr: 1, color: '#B8860B' }} />}
-              sx={{ 
+        {/* Fila 3: Búsqueda y Filtros avanzados (Solo PC) */}
+        <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1, alignItems: 'center' }}>
+          <TextField 
+            size="small" 
+            placeholder="Buscar..." 
+            slotProps={{ 
+              input: { 
+                startAdornment: <InputAdornment position="start"><SearchIcon sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 20 }} /></InputAdornment> 
+              } 
+            }} 
+            sx={{ 
+              width: '200px', 
+              '& .MuiOutlinedInput-root': { 
+                borderRadius: 2, 
                 bgcolor: 'rgba(255, 255, 255, 0.08)',
                 color: '#FFFFFF',
-                borderRadius: 2,
-                '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.15)' },
-                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.3)' },
-                '& .MuiSelect-icon': { color: '#FFFFFF' },
-                '& .MuiSvgIcon-root': { color: '#FFFFFF' },
-              }}
-              // CAMBIO CLAVE: Forzar fondo oscuro en el contenedor del menú desplegable
-              MenuProps={{
-                PaperProps: {
-                  sx: {
-                    bgcolor: '#1a1a1a',
-                    color: '#FFFFFF',
-                    borderRadius: 2,
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
-                    mt: 1,
-                  }
-                }
-              }}
-            >
-              {panoramas.map((pano) => (
-                <MenuItem 
-                  key={pano.id} 
-                  value={pano.id} 
-                  sx={{ 
-                    color: '#FFFFFF',
-                    borderRadius: 1.5,
-                    mx: 1,
-                    my: 0.5,
-                    '&:hover': {
-                      bgcolor: 'rgba(184, 134, 11, 0.2)',
-                      color: '#B8860B',
-                    },
-                    '&.Mui-selected': {
-                      bgcolor: 'rgba(184, 134, 11, 0.25)',
-                      color: '#B8860B',
-                      fontWeight: 700,
-                      '&:hover': {
-                        bgcolor: 'rgba(184, 134, 11, 0.35)',
-                      }
-                    },
-                  }}
-                >
-                  {pano.title}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        )}
-
-        <TextField 
-          size="small" 
-          placeholder="Buscar..." 
-          slotProps={{ 
-            input: { 
-              startAdornment: <InputAdornment position="start"><SearchIcon sx={{ color: 'rgba(255,255,255,0.6)' }} /></InputAdornment> 
-            } 
-          }} 
-          sx={{ 
-            width: { xs: '30%', md: '300px' }, 
-            display: { xs: 'none', sm: 'block' },
-            '& .MuiOutlinedInput-root': { 
-              borderRadius: 2, 
-              bgcolor: 'rgba(255, 255, 255, 0.08)',
-              color: '#FFFFFF',
-              '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.15)' },
-              '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.3)' },
-              '& input::placeholder': { color: 'rgba(255,255,255,0.5)', opacity: 1 },
-            } 
-          }} 
-        />
-        
-        <Box sx={{ display: 'flex', gap: 1 }}>
+                height: 36,
+                '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.15)' },
+                '& input::placeholder': { color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem' },
+              } 
+            }} 
+          />
           <IconButton sx={{ 
             bgcolor: 'rgba(255, 255, 255, 0.08)', 
             color: '#FFFFFF',
             border: '1px solid rgba(255, 255, 255, 0.1)',
+            width: 36, height: 36,
             '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.15)' } 
           }}>
-            <TuneIcon />
+            <TuneIcon fontSize="small" />
           </IconButton>
         </Box>
       </Box>
 
-            {/* CHIPS PREMIUM (Compactos, sin scroll, caben en una fila) */}
+      {/* CHIPS PREMIUM (Compactos, sin scroll, caben en una fila) */}
       <Box sx={{ 
         position: 'fixed', 
-        top: { xs: 65, md: 80 }, 
+        top: { xs: 115, md: 80 }, // CAMBIO CLAVE: Bajado en móvil (de 65 a 115) para no chocar con la nueva barra
         left: 0, right: 0, zIndex: 999, 
         px: { xs: 2, md: 4 }, py: 1.5, 
         display: 'flex', 
-        justifyContent: 'center', // Centrar los chips
+        justifyContent: 'center', 
         gap: 1, 
         background: 'rgba(15, 15, 15, 0.55)',
         backdropFilter: 'blur(20px)',
@@ -583,28 +571,17 @@ const Home = () => {
             <Chip 
               key={chip.id}
               icon={chip.icon}
-              label={chip.label} // Quitamos .toUpperCase() para que sea más compacto
-              size="small" // CAMBIO CLAVE: de medium a small
+              label={chip.label}
+              size="small"
               onClick={() => setActiveFilter(chip.id)}
               sx={{ 
-                borderRadius: 2, 
-                fontWeight: 600, 
-                fontSize: '0.75rem', // Más pequeño
-                px: 1.5, // Menos padding horizontal
-                height: 32, // Altura fija pequeña
+                borderRadius: 2, fontWeight: 600, fontSize: '0.75rem', px: 1.5, height: 32,
                 bgcolor: isActive ? chip.color : 'rgba(255, 255, 255, 0.06)',
                 color: isActive ? '#FFFFFF' : 'rgba(255, 255, 255, 0.85)',
                 border: isActive ? 'none' : '1px solid rgba(255, 255, 255, 0.15)',
-                transition: 'all 0.25s ease',
-                cursor: 'pointer',
-                '& .MuiChip-icon': { 
-                  color: isActive ? '#FFFFFF' : 'rgba(255, 255, 255, 0.7)',
-                  ml: '4px',
-                  fontSize: '16px', // Icono más pequeño
-                },
-                '&:hover': { 
-                  bgcolor: isActive ? chip.color : 'rgba(255, 255, 255, 0.12)',
-                },
+                transition: 'all 0.25s ease', cursor: 'pointer',
+                '& .MuiChip-icon': { color: isActive ? '#FFFFFF' : 'rgba(255, 255, 255, 0.7)', ml: '4px', fontSize: '16px' },
+                '&:hover': { bgcolor: isActive ? chip.color : 'rgba(255, 255, 255, 0.12)' },
                 boxShadow: isActive ? `0 4px 12px ${chip.color}40` : 'none',
               }} 
             />
