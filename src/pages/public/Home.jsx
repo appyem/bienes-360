@@ -21,20 +21,17 @@ const toRad = (deg) => deg * (Math.PI / 180);
 
 // Paleta de colores PREMIUM (más sobrios y elegantes)
 const STATUS_COLORS = {
-  todos: '#2C3E50',      // Azul carbón profundo
-  venta: '#1E3A5F',      // Azul profundo elegante
-  arriendo: '#B8860B',   // Dorado oscuro / Ámbar
+  todos: '#2C3E50',
+  venta: '#1E3A5F',
+  arriendo: '#B8860B',
 };
 
-
-// Función para formatear precios de forma abreviada (K = miles, M = millones)
 const formatPrice = (price) => {
   const num = typeof price === 'string' ? Number(price.replace(/[^0-9.-]+/g, '')) : Number(price);
   if (isNaN(num)) return `$${price}`;
   
   if (num >= 1000000) {
     const millions = num / 1000000;
-    // Si es exacto (ej: 50M) no muestra decimales, si no, muestra 1 decimal
     return `$${millions % 1 === 0 ? millions : millions.toFixed(1)}M`;
   }
   if (num >= 1000) {
@@ -44,8 +41,6 @@ const formatPrice = (price) => {
   return `$${num.toLocaleString('es-CO')}`;
 };
 
-
-
 const Home = () => {
   const viewerRef = useRef(null);
   const [selectedMarkerData, setSelectedMarkerData] = useState(null);
@@ -54,7 +49,7 @@ const Home = () => {
   const [panoramaInfo, setPanoramaInfo] = useState({ title: 'Cargando...', city: '', markersCount: 0 });
   
   const [activeFilter, setActiveFilter] = useState('todos');
-  const [selectedCity, setSelectedCity] = useState('todas'); // Nueva ciudad seleccionada
+  const [selectedCity, setSelectedCity] = useState('todas');
   
   const [showTutorial, setShowTutorial] = useState(() => {
     const hasSeenTutorial = localStorage.getItem('hasSeenTutorial');
@@ -62,8 +57,6 @@ const Home = () => {
   });
   
   const [tutorialStep, setTutorialStep] = useState(1);
-
-   // Estado de pantalla completa
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const toggleFullscreen = () => {
@@ -79,7 +72,6 @@ const Home = () => {
     }
   };
 
-  // Escuchar cambios de pantalla completa (cuando el usuario presiona Esc o sale)
   useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
@@ -103,10 +95,9 @@ const Home = () => {
     }
   };
 
-    useEffect(() => {
+  useEffect(() => {
     const loadAllPanoramas = async () => {
       try {
-        // Construir la consulta según la ciudad seleccionada
         let panoramasQuery;
         if (selectedCity === 'todas') {
           panoramasQuery = query(
@@ -141,7 +132,7 @@ const Home = () => {
     };
     
     loadAllPanoramas();
-  }, [selectedCity]); // CAMBIO CLAVE: Ahora depende de selectedCity
+  }, [selectedCity]);
 
   useEffect(() => {
     if (!selectedPanoramaId || panoramas.length === 0) return;
@@ -185,7 +176,7 @@ const Home = () => {
             id: doc.id,
             propertyId: doc.id,
             title: data.title,
-                price: formatPrice(data.price),
+            price: formatPrice(data.price),
             status: data.status,
             neighborhood: data.neighborhood,
             area: data.area,
@@ -219,11 +210,6 @@ const Home = () => {
         return true;
       });
 
-            // ==========================================
-      // PEGUE ESTE BLOQUE NUEVO (DESPUÉS)
-      // ==========================================
-      
-            // Función auxiliar con colores de ALTO CONTRASTE para entornos 360°
       const getMarker360Colors = (status) => {
         if (status === 'venta') return { 
           border: '#FF007F', 
@@ -251,7 +237,7 @@ const Home = () => {
             yaw: toRad(marker.position.yaw),
             pitch: toRad(marker.position.pitch),
           },
-                    html: `
+          html: `
             <style>
               @keyframes markerBounce360 {
                 0%, 100% { transform: translateY(0); }
@@ -270,18 +256,20 @@ const Home = () => {
                 cursor: pointer !important;
                 touch-action: manipulation !important;
                 -webkit-tap-highlight-color: transparent;
-                pointer-events: auto !important; /* CLAVE: Fuerza la interacción en fullscreen */
+                pointer-events: auto !important;
               }
               .marker-circle {
                 animation-duration: 1.5s;
                 animation-iteration-count: infinite;
                 animation-timing-function: ease-in-out;
-                pointer-events: auto !important; /* CLAVE: Fuerza la interacción en fullscreen */
+                pointer-events: auto !important;
               }
               .pulse-magenta { animation-name: pulse-magenta; }
               .pulse-cyan { animation-name: pulse-cyan; }
             </style>
             <div class="marker-360-wrapper" 
+                 onclick="window._handlePsvMarkerClick('${marker.id}')" 
+                 ontouchend="window._handlePsvMarkerClick('${marker.id}')"
                  style="position: relative; width: 60px; height: 76px; display: flex; flex-direction: column; align-items: center; pointer-events: auto !important;">
               
               <div class="marker-circle ${colors.pulseClass}" style="
@@ -291,7 +279,7 @@ const Home = () => {
                 position: relative; z-index: 2;
                 pointer-events: auto !important;
               ">
-                <img src="/logo.png" alt="Logo" style="width: 40px; height: 40px; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3)); pointer-events: none;" />
+                <img src="/logo.png" alt="Logo" style="width: 40px; height: 40px; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3)); pointer-events: none !important;" />
               </div>
               
               <div style="
@@ -304,7 +292,7 @@ const Home = () => {
                 filter: drop-shadow(0 4px 4px rgba(0,0,0,0.4));
                 pointer-events: auto !important;
               "></div>
-                       </div>
+            </div>
           `,
           data: marker,
           clickable: true,
@@ -320,18 +308,30 @@ const Home = () => {
         ],
       });
       
-      viewerRef.current = newViewer;
+           viewerRef.current = newViewer;
 
-      window._handlePsvMarkerClick = (markerId) => {
+      const handleMarkerClick = (markerId) => {
         const marker = filteredMarkers.find((m) => m.id === markerId);
-        if (marker) {
-          setSelectedMarkerData(marker);
+        if (!marker) return;
+
+        // Salir de pantalla completa inmediatamente si está activa
+        if (document.fullscreenElement) {
+          document.exitFullscreen();
         }
+
+        // Abrir el modal después de un breve retraso
+        setTimeout(() => {
+          setSelectedMarkerData(marker);
+        }, 50);
       };
 
-      newViewer.addEventListener('select-marker', (marker) => {
-        if (marker && marker.data) {
-          setSelectedMarkerData(marker.data);
+      // Asignar la función global para el onclick inline
+      window._handlePsvMarkerClick = handleMarkerClick;
+
+      // También usar el evento nativo de PSV como respaldo
+      newViewer.addEventListener('select-marker', (event) => {
+        if (event.marker && event.marker.data) {
+          handleMarkerClick(event.marker.id);
         }
       });
 
@@ -358,7 +358,6 @@ const Home = () => {
     setSelectedMarkerData(null);
   };
 
-  // Chips con iconos profesionales (sin emojis)
   const filterChips = [
     { id: 'todos', label: 'Todos', icon: <HomeWorkIcon sx={{ fontSize: 18 }} />, color: STATUS_COLORS.todos },
     { id: 'venta', label: 'Venta', icon: <BusinessIcon sx={{ fontSize: 18 }} />, color: STATUS_COLORS.venta },
@@ -371,26 +370,23 @@ const Home = () => {
       width: '100%', 
       height: '100vh', 
       overflow: 'hidden',
-      // Fondo oscuro elegante con degradado sutil
       background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%)',
     }}>
-           {/* BARRA SUPERIOR PREMIUM (Optimizada para Móvil y PC) */}
       <Box sx={{ 
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000, 
         px: { xs: 2, md: 4 }, py: { xs: 1.5, md: 2 }, 
         display: 'flex', 
-        flexDirection: { xs: 'column', md: 'row' }, // En móvil se apila, en PC se alinea
+        flexDirection: { xs: 'column', md: 'row' },
         alignItems: { xs: 'stretch', md: 'center' },
         justifyContent: 'space-between', 
         gap: { xs: 1.5, md: 2 }, 
-        background: 'rgba(15, 15, 15, 0.85)', // Un poco más oscuro en móvil para legibilidad
+        background: 'rgba(15, 15, 15, 0.85)',
         backdropFilter: 'blur(24px) saturate(180%)',
         WebkitBackdropFilter: 'blur(24px) saturate(180%)',
         borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
         boxShadow: '0 4px 30px rgba(0, 0, 0, 0.3)',
       }}>
         
-        {/* Fila 1: Logo y Título */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <Box 
             component="img" 
@@ -408,7 +404,7 @@ const Home = () => {
             variant="h6" 
             fontWeight="700" 
             sx={{ 
-              display: { xs: 'none', sm: 'block' }, // Ocultar texto en móviles muy pequeños
+              display: { xs: 'none', sm: 'block' },
               letterSpacing: '0.5px', 
               whiteSpace: 'nowrap',
               color: '#FFFFFF',
@@ -419,15 +415,13 @@ const Home = () => {
           </Typography>
         </Box>
 
-        {/* Fila 2: Filtros Compactos con Etiquetas */}
         <Box sx={{ 
           display: 'flex', 
           flexDirection: 'row', 
           gap: 1.5, 
-          width: { xs: '100%', md: 'auto' } // En móvil ocupa todo el ancho disponible
+          width: { xs: '100%', md: 'auto' }
         }}>
           
-          {/* SELECTOR DE CIUDAD */}
           <Box sx={{ flex: 1 }}>
             <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', ml: 1, mb: 0.5, display: 'block', fontSize: '0.7rem' }}>
               Ciudad
@@ -442,7 +436,7 @@ const Home = () => {
                   bgcolor: 'rgba(255, 255, 255, 0.08)',
                   color: '#FFFFFF',
                   borderRadius: 1.5,
-                  height: 36, // Altura fija compacta
+                  height: 36,
                   '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.15)' },
                   '& .MuiSelect-select': { py: 0.5, fontSize: '0.85rem' },
                   '& .MuiSelect-icon': { color: '#FFFFFF' },
@@ -467,7 +461,6 @@ const Home = () => {
             </FormControl>
           </Box>
 
-          {/* SELECTOR DE ZONA / SECTOR */}
           <Box sx={{ flex: 1 }}>
             <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', ml: 1, mb: 0.5, display: 'block', fontSize: '0.7rem' }}>
               Zona / Sector
@@ -516,7 +509,6 @@ const Home = () => {
           </Box>
         </Box>
 
-        {/* Fila 3: Búsqueda y Filtros avanzados (Solo PC) */}
         <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1, alignItems: 'center' }}>
           <TextField 
             size="small" 
@@ -550,10 +542,9 @@ const Home = () => {
         </Box>
       </Box>
 
-      {/* CHIPS PREMIUM (Compactos, sin scroll, caben en una fila) */}
       <Box sx={{ 
         position: 'fixed', 
-        top: { xs: 115, md: 80 }, // CAMBIO CLAVE: Bajado en móvil (de 65 a 115) para no chocar con la nueva barra
+        top: { xs: 115, md: 80 },
         left: 0, right: 0, zIndex: 999, 
         px: { xs: 2, md: 4 }, py: 1.5, 
         display: 'flex', 
@@ -588,7 +579,6 @@ const Home = () => {
         })}
       </Box>
 
-            {/* BOTÓN DE PANTALLA COMPLETA */}
       <Box
         onClick={toggleFullscreen}
         sx={{
@@ -625,11 +615,9 @@ const Home = () => {
         )}
       </Box>
 
-      {/* VISOR 360° */}
-            <Box id="panorama-viewer" sx={{ 
+      <Box id="panorama-viewer" sx={{ 
         position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1, 
         '& .psv-canvas': { cursor: 'grab', '&:active': { cursor: 'grabbing' } },
-        // Cuando está en pantalla completa, el visor ocupa todo y se pone por encima de todo
         '&:fullscreen': {
           width: '100vw',
           height: '100vh',
@@ -644,10 +632,8 @@ const Home = () => {
         },
       }} />
 
-      {/* MODAL DE PROPIEDAD */}
       {selectedMarkerData && <PanoramaMarker marker={selectedMarkerData} onClose={handleCloseModal} />}
 
-      {/* BARRA INFERIOR PREMIUM */}
       <Box sx={{ 
         position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1000, 
         px: { xs: 2, md: 4 }, py: 2, 
@@ -676,7 +662,6 @@ const Home = () => {
         </Box>
       </Box>
 
-      {/* TUTORIAL DE BIENVENIDA (Premium) */}
       <Modal
         open={showTutorial}
         onClose={handleCloseTutorial}
