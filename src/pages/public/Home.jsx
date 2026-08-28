@@ -251,7 +251,7 @@ const Home = () => {
             yaw: toRad(marker.position.yaw),
             pitch: toRad(marker.position.pitch),
           },
-          html: `
+                    html: `
             <style>
               @keyframes markerBounce360 {
                 0%, 100% { transform: translateY(0); }
@@ -270,32 +270,30 @@ const Home = () => {
                 cursor: pointer !important;
                 touch-action: manipulation !important;
                 -webkit-tap-highlight-color: transparent;
+                pointer-events: auto !important; /* CLAVE: Fuerza la interacción en fullscreen */
               }
               .marker-circle {
                 animation-duration: 1.5s;
                 animation-iteration-count: infinite;
                 animation-timing-function: ease-in-out;
+                pointer-events: auto !important; /* CLAVE: Fuerza la interacción en fullscreen */
               }
               .pulse-magenta { animation-name: pulse-magenta; }
               .pulse-cyan { animation-name: pulse-cyan; }
             </style>
             <div class="marker-360-wrapper" 
-                 onclick="window._handlePsvMarkerClick('${marker.id}')" 
-                 ontouchend="window._handlePsvMarkerClick('${marker.id}')"
-                 style="position: relative; width: 60px; height: 76px; display: flex; flex-direction: column; align-items: center;">
+                 style="position: relative; width: 60px; height: 76px; display: flex; flex-direction: column; align-items: center; pointer-events: auto !important;">
               
-              <!-- Círculo superior con animación de latido en el nuevo color -->
               <div class="marker-circle ${colors.pulseClass}" style="
                 width: 60px; height: 60px; border-radius: 50%; background: #ffffff;
                 border: 4px solid ${colors.border};
                 display: flex; align-items: center; justify-content: center;
                 position: relative; z-index: 2;
+                pointer-events: auto !important;
               ">
-                <!-- Logo grande con sombra para máximo contraste -->
-                <img src="/logo.png" alt="Logo" style="width: 40px; height: 40px; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));" />
+                <img src="/logo.png" alt="Logo" style="width: 40px; height: 40px; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3)); pointer-events: none;" />
               </div>
               
-              <!-- Cola triangular del marcador -->
               <div style="
                 width: 0; height: 0;
                 border-left: 12px solid transparent;
@@ -304,8 +302,9 @@ const Home = () => {
                 margin-top: -5px;
                 z-index: 1;
                 filter: drop-shadow(0 4px 4px rgba(0,0,0,0.4));
+                pointer-events: auto !important;
               "></div>
-            </div>
+                       </div>
           `,
           data: marker,
           clickable: true,
